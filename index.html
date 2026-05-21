@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Video KB</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#4A9EFF;--orange:#FF6A00;--bg:#0A0A12;--surface:#141420;--surface2:#1C1C2C;--border:#2A2A3C;--text:#F0F0F0;--muted:#888;--green:#00BB77;--red:#FF4444;--purple:#BB77FF;--yellow:#FFB700}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+.app{display:flex;flex:1;overflow:hidden}
+.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
+.logo{font-size:10px;letter-spacing:3px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:4px}
+.logo-sub{font-size:10px;color:var(--muted)}
+.nav{flex:1;overflow-y:auto;padding:8px 0}
+.nav-item{padding:10px 16px;cursor:pointer;border-left:2px solid transparent;display:flex;justify-content:space-between;align-items:center;transition:all .15s;user-select:none}
+.nav-item:hover{background:var(--surface2)}
+.nav-item.active{border-left-color:var(--accent);background:var(--surface2)}
+.nav-item.active .nav-label{color:var(--accent)}
+.nav-label{font-size:12px;font-weight:500}
+.nav-count{font-size:10px;padding:2px 7px;border-radius:10px;min-width:22px;text-align:center;background:var(--border);color:var(--muted)}
+.nav-item.active .nav-count{color:white}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:10px;color:var(--muted)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.main-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0}
+.header-left{}
+.section-title{font-size:16px;font-weight:700}
+.section-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.btn{padding:7px 14px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:12px;font-family:inherit;cursor:pointer;font-weight:500;border-radius:3px;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--accent);color:var(--bg)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:white}
+.btn-muted{border-color:var(--muted);color:var(--muted)}
+.btn-muted:hover{background:var(--muted);color:var(--bg)}
+.entries{flex:1;overflow-y:auto;padding:16px 20px}
+.entry{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);margin-bottom:12px;padding:14px 16px;transition:border-color .15s}
+.entry:hover{border-color:var(--accent)}
+.entry-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.entry-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4}
+.entry-meta{font-size:10px;color:var(--muted);white-space:nowrap;margin-left:12px;flex-shrink:0;padding-top:2px}
+.entry-content{font-size:12px;color:#CCC;line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.entry-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.entry-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:10px;padding:2px 8px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:2px}
+.entry-actions{display:flex;gap:6px;flex-shrink:0;margin-left:12px}
+.empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty-icon{font-size:36px;opacity:.15;margin-bottom:16px}
+.empty p{font-size:12px;line-height:1.8}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);width:600px;max-height:85vh;display:flex;flex-direction:column;transform:translateY(16px);transition:transform .2s}
+.overlay.show .modal{transform:translateY(0)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:0 2px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.form-group{margin-bottom:16px}
+.form-label{font-size:10px;color:var(--muted);margin-bottom:5px;display:block;letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-size:13px;font-family:inherit;outline:none;border-radius:2px;transition:border-color .15s}
+.form-input:focus{border-color:var(--accent)}
+.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-size:13px;font-family:inherit;outline:none;border-radius:2px;cursor:pointer}
+.form-select:focus{border-color:var(--accent)}
+.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-size:12px;font-family:inherit;outline:none;resize:vertical;min-height:180px;line-height:1.85;border-radius:2px;transition:border-color .15s}
+.form-textarea:focus{border-color:var(--accent)}
+.form-hint{font-size:10px;color:var(--muted);margin-top:4px}
+.toast{position:fixed;bottom:24px;right:24px;color:white;padding:10px 18px;font-size:12px;font-weight:500;z-index:200;opacity:0;transition:opacity .25s;border-radius:2px;pointer-events:none}
+.toast.show{opacity:1}
+.count-summary{display:flex;gap:12px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.count-item{font-size:10px;color:var(--muted)}
+.count-item span{color:var(--text);font-weight:700;margin-right:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">AI Video KB</div>
+      <div class="logo-sub">생성형 AI 영상 지식 베이스</div>
+    </div>
+    <div class="nav" id="nav"></div>
+    <div class="sidebar-footer">로컬 저장 · 브라우저 유지</div>
+  </div>
+  <div class="main">
+    <div class="main-header">
+      <div class="header-left">
+        <div class="section-title" id="main-title">섹션을 선택하세요</div>
+        <div class="section-desc" id="main-desc"></div>
+      </div>
+      <button class="btn" id="add-btn" style="display:none" onclick="openModal()">+ 새 항목 추가</button>
+    </div>
+    <div class="count-summary" id="count-summary" style="display:none"></div>
+    <div class="entries" id="entries">
+      <div class="empty"><div class="empty-icon">◈</div><p>왼쪽에서 섹션을 선택하세요</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">새 항목 추가</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" id="section-select-group">
+        <label class="form-label">섹션</label>
+        <select class="form-select" id="f-section"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">제목</label>
+        <input class="form-input" id="f-title" placeholder="예: 스케치 스토리보드 전환 방식">
+      </div>
+      <div class="form-group">
+        <label class="form-label">내용</label>
+        <textarea class="form-textarea" id="f-content" placeholder="발견한 기술, 원칙, 주의사항 등을 자유롭게 작성하세요."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">태그 (쉼표로 구분)</label>
+        <input class="form-input" id="f-tags" placeholder="예: Seedance, 스토리보드, 퀄리티">
+        <div class="form-hint">Cmd+Enter 또는 Ctrl+Enter로 빠르게 저장</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-muted" onclick="closeModal()">취소</button>
+      <button class="btn" onclick="saveEntry()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SECTIONS=[
+  {id:'planning',label:'기획',desc:'전략·방향성·배경·목적',color:'#4A9EFF'},
+  {id:'preproduction',label:'프리프로덕션',desc:'탐색·컨펌·가편집·동선 확정',color:'#FF6A00'},
+  {id:'production',label:'프로덕션',desc:'스토리보드·앵커·영상 생성·편집',color:'#00BB77'},
+  {id:'prompt_rules',label:'프롬프트 룰',desc:'Seedance·GPT 프롬프팅 규칙',color:'#BB77FF'},
+  {id:'workflow',label:'워크플로우',desc:'전체 흐름·판단 기준·실수 방지',color:'#FFB700'},
+];
+
+const SEED={
+  planning:[
+    {title:'이 프로세스가 만들어진 배경',content:`생성형 AI 영상 모델(Seedance 2.0)은 레퍼런스 이미지와 프롬프트를 앵커로 영상을 생성한다.\n\n모델의 재량을 존중할수록 예측 불가능하지만 창의적인 결과가 나온다.\n제어를 높일수록 의도한 연출을 구현할 수 있지만 탐색 범위가 좁아진다.\n\n이 프로세스는 두 가지 균형을 단계별로 조율하는 방식으로 설계되었다.`,tags:['배경','원칙','Seedance'],date:'2026.05.21'},
+    {title:'전체 프로세스 한눈에 보기',content:`[프리프로덕션 1단계] 앵커 검증 및 흐름 탐색\n— 빠른 앵커 + 텍스트로 소사이즈 영상 다수 생성 → 가편집\n— 확정: 타이밍·컷 순서·동선·180도 룰\n— 열림: 앵글·연출 전부\n\n[프리프로덕션 2단계] 컨펌\n— 관계자에게 흐름·동선 컨펌\n— 퀄리티·빛·앵커 정확도는 무시. 흐름만 본다.\n\n[프로덕션 1단계] 앵커 정교화 · 스토리보드 5종\n— 레퍼런스 시트 완성 후 같은 흐름, 다른 연출로 5종 제작\n\n[프로덕션 2단계] 영상 5개 생성 및 편집 조합\n— 샷 단위로 베스트 선정하여 편집 조합\n\n[프로덕션 3단계] 핵심 컷 집중 생성\n— 베스트 스토리보드 반복 생성\n— 핵심 컷은 I2V + 모션 컨트롤로 별도 생성\n\n[프로덕션 4단계] 부분 수정\n— Video Extend / Video Edit으로 특정 구간만 보정\n— 전체 재생성은 최후 수단`,tags:['전체흐름','프로세스','개요'],date:'2026.05.21'},
+  ],
+  preproduction:[
+    {title:'프리프로덕션 1단계 — 앵커 검증 및 흐름 탐색 (A방식)',content:`목적: 컷의 흐름·타이밍·동선을 확정하는 것. 퀄리티·빛·앵커 정확도는 중요하지 않다.\n러프할수록 좋다.\n\n방법:\n— 빠른 앵커와 텍스트 프롬프트만으로 소사이즈 영상을 여러 개 생성\n— 가편집하여 흐름의 가능성을 탐색\n— 빛이 안 맞거나 앵커가 부정확한 것들은 그냥 넘어간다. 흐름만 본다.\n\n이 단계에서 확정할 것:\n✓ 총 몇 컷인가\n✓ 각 컷의 초단위 타이밍\n✓ 컷의 순서와 흐름\n✓ 캐릭터의 공간 동선\n✓ 180도 룰 — 카메라가 어느 방향에서 보는가\n\n이 단계에서 열어둘 것:\n○ 카메라 앵글과 구도\n○ 카메라 무브 방식\n○ 연출의 강도와 스타일\n○ 슬로우모션 여부 및 위치\n\n주의: 가편집이 너무 그럴듯하면 안 된다. 스토리보드 5종에서 나올 수 있는 좋은 연출의 가능성이 잠긴다.`,tags:['프리프로덕션','가편집','A방식','탐색'],date:'2026.05.21'},
+    {title:'프리프로덕션 2단계 — 컨펌',content:`가편집본을 관계자에게 공유하여 흐름·동선·타이밍을 컨펌 받는다.\n\n컨펌 받는 것:\n— 어떤 앵글로 찍느냐가 아니라 무엇을 어떤 순서로 보여주느냐\n— 타이밍, 동선, 컷 순서\n\n주의: "왜 이 앵글이야?"라는 질문이 나오면 프리프로덕션이 덜 된 것.\n앵글은 프로덕션에서 결정한다는 걸 공유해야 한다.`,tags:['프리프로덕션','컨펌','커뮤니케이션'],date:'2026.05.21'},
+    {title:'가편집 타이밍 확정 — 핵심 원칙',content:`가편집에서 각 샷의 초단위 타이밍을 기록하고, 프로덕션 프롬프트에 그대로 명시한다.\n\n이것이 가편집과 실제 영상 사이의 타이밍 드리프트를 줄이는 가장 현실적인 방법이다.\n\n예시:\nShot 01 → 3.0초\nShot 02 → 4.0초\nShot 03 → 3.0초\n\n이 숫자를 Seedance 프롬프트에 그대로 박으면 타이밍 드리프트의 대부분이 잡힌다.\n\n참고: 비디오 레퍼런스로 쓰는 방식은 비추. 저퀄리티 러프 영상의 스타일·조명·모션이 Seedance 앵커로 오염된다.`,tags:['타이밍','드리프트','가편집','원칙'],date:'2026.05.21'},
+    {title:'동선과 180도 룰 — 프리프로덕션에서 반드시 확정',content:`공간 동선과 180도 룰은 스토리보드 5종이 아무리 연출을 다르게 해도 지켜야 할 물리적 뼈대다.\n\n이게 흔들리면 편집에서 컷을 조합할 때 공간이 뒤집히는 문제가 생긴다.\n\n캐릭터가 왼쪽에서 굴러들어왔는데 다음 컷에서 오른쪽을 보고 있으면 공간감이 깨진다.\n이건 연출 스타일의 문제가 아니라 물리적 일관성의 문제다.\n\n→ 프리프로덕션에서 반드시 잠가야 한다.`,tags:['동선','180도룰','물리적일관성','원칙'],date:'2026.05.21'},
+  ],
+  production:[
+    {title:'프로덕션 1단계 — 앵커 정교화 및 스토리보드 5종 제작',content:`캐릭터·배경·무기·의상 레퍼런스 시트를 고퀄리티로 완성한다.\n같은 흐름이지만 연출 느낌만 다른 스토리보드 5종을 제작한다.\n마음에 안 드는 컷이 있으면 앵글·연출 위주로 미세하게 수정하여 5종을 완성한다.\n프리프로덕션에서 확정된 샷 타이밍(초)을 각 스토리보드 프롬프트에 명시한다.\n\n핵심: 스토리보드 5종은 완전히 다른 연출이 아니라 같은 뼈대에서 연출 변수만 달리한 것이다.\n변수 하나씩만 바꿔야 나중에 비교가 명확하다.`,tags:['스토리보드','앵커','5종','프로덕션'],date:'2026.05.21'},
+    {title:'프로덕션 2단계 — 영상 5개 생성 및 컷 편집 조합',content:`스토리보드 5종을 각각 Seedance에 투입하여 영상 5개를 생성한다.\n같은 앵커 베이스에서 나온 영상들이므로 캐릭터·배경 일관성이 유지된다.\n5개 영상에서 샷 단위로 가장 잘 나온 컷을 선정하여 편집으로 조합한다.\n\n영상 선택 판단 기준:\n캐릭터 일관성 > 카메라 무브의 의도 반영 > 모션 자연스러움\n\n퀄리티가 아무리 좋아도 캐릭터 얼굴이 달라보이면 사용 불가.`,tags:['영상생성','편집','컷선정','일관성'],date:'2026.05.21'},
+    {title:'프로덕션 3단계 — 베스트 스토리보드 반복 생성',content:`편집 조합에서 가장 잘 나온 스토리보드를 식별한다.\n같은 스토리보드로 영상을 여러 번 더 생성하여 선택지를 확보한다.\n\n핵심: Seedance는 동일한 인풋에서도 매번 미세하게 다른 결과를 낸다.\n→ 같은 인풋으로 여러 번 돌리는 것만으로 선택지가 늘어난다.`,tags:['반복생성','선택지','베스트'],date:'2026.05.21'},
+    {title:'프로덕션 4단계 — 핵심 컷 I2V + 모션 컨트롤 단독 생성',content:`가장 중요하거나 오래 머무는 핵심 컷은 별도로 집중 생성한다.\n\n순서:\n1. GPT Image 2.0으로 해당 컷의 START FRAME을 고퀄리티 단독 이미지로 생성\n2. 그 이미지를 Seedance I2V에 투입\n3. 모션 컨트롤 기능으로 원하는 카메라 무브를 레이어로 얹는다\n4. 여러 번 돌려서 베스트를 선택\n\nI2V로 처리할 것:\n✓ 캐릭터 얼굴이 크게 잡히는 클로즈업\n✓ 감정적으로 중요한 순간\n✓ 편집에서 오래 머무는 컷\n\nT2V로 충분한 것:\n○ 빠르게 지나가는 동적 컷\n○ 와이드 샷\n○ 배경 위주 컷\n\n핵심: I2V는 시작 프레임을 완전히 고정하므로 캐릭터 일관성이 T2V보다 훨씬 안정적이다.`,tags:['I2V','T2V','핵심컷','모션컨트롤'],date:'2026.05.21'},
+    {title:'프로덕션 5단계 — Video Extend / Edit 부분 수정',content:`잘 나온 영상에서 특정 구간만 아쉬울 때 처음부터 다시 생성하지 않는다.\n\nSeedance의 Video Edit 기능으로 해당 구간만 수정한다.\nVideo Extend 기능으로 클립 길이를 연장할 수 있다.\n\n전략: 전체를 다시 돌리면 다른 샷의 퀄리티가 바뀔 수 있다. 부분 수정이 더 안전하다.`,tags:['VideoEdit','VideoExtend','부분수정'],date:'2026.05.21'},
+    {title:'스케치 스토리보드 전략 — 퀄리티 블리딩 방지',content:`문제: 포토리얼 스토리보드를 넣으면 스토리보드 화질이 영상 퀄리티를 끌어내린다.\n원인: Seedance가 스토리보드를 "비주얼 DNA"로 취급 — 캐릭터·의상·조명·컬러팔레트가 거기서 잠긴다.\n\n해결책: 스토리보드를 실무 스케치 형식으로 만든다.\n\n역할 분리:\n— 스케치 스토리보드 → 구도·카메라·흐름만 담당. 화질 영향 없음\n— 앵커(@img1~4) → 캐릭터·배경·무기·의상 퀄리티 담당\n— 프롬프트 텍스트 → 분위기·재질·조명·퀄리티 언어로 담당\n\n워크플로우:\n앵커 → 리얼리스틱 스토리보드 생성(컨펌용) → 스케치로 변환 → Seedance 투입\n\n스케치 변환 프롬프트:\n"Convert the storyboard panel illustrations to professional hand-drawn sketch style.\nCHANGE ONLY: drawing style → clean black and white pencil sketch.\nKEEP EXACTLY: table layout, all text, shot composition, framing, camera angle, character positioning."`,tags:['스케치','스토리보드','퀄리티블리딩','전략'],date:'2026.05.21'},
+    {title:'해상도 선택 기준 — 720p vs 1080p',content:`테스트 단계: 720p로 진행한다.\n\n이유: 스토리보드 반영률, 캐릭터 일관성, 샷 흐름은 해상도와 무관하게 720p에서도 충분히 판단 가능.\n\n1080p가 필요한 때: 최종 컷 확정하고 퀄리티 뽑을 때.\n\n같은 크레딧으로 720p 3번 돌리는 게 1080p 1번보다 낫다.`,tags:['720p','1080p','해상도','크레딧'],date:'2026.05.21'},
+  ],
+  prompt_rules:[
+    {title:'Seedance 최적화 프롬프트 구조',content:`[스토리보드 지시]\nRefer to @img5 for shot structure, framing, and camera movement only — not for visual quality or style.\n\n[앵커 역할 분리]\nCharacter appearance references @img2, costume references @img4 — maintain exact appearance throughout, no drift.\nEnvironment references @img1. Weapon references @img3.\n\n[모션 지시 — 이미지 재설명 금지]\nSeedance는 이미 이미지를 보고 있다. 프롬프트는 모션만 기술한다.\n"camera slowly orbits around her"가 외모를 다시 설명하는 것보다 훨씬 효과적이다.\n\n[퀄리티 — 텍스트가 담당]\nPhotorealistic. Cinematic 4K.\nDramatic volumetric lighting — [씬에 맞는 조명 기술].\n[재질 기술 — 콘크리트, 금속, 먼지 등]\nAnamorphic lens flare. Film grain.\nFace stable, no distortion, fluid motion.\n\n[일관성 고정]\nConsistent character appearance across all shots.\nNo deformation or drift.\n\n[네거티브]\nNo camera reset between shots. No distortion.\n[씬 특성에 맞는 금지사항]\n\n핵심: 120~280단어 유지. 너무 짧으면 예측 불가, 너무 길면 포커스 분산.`,tags:['Seedance','프롬프트구조','최적화','R2V'],date:'2026.05.21'},
+    {title:'@tag 사용 규칙',content:`플랫폼별 태그 형식:\n— GPT Image 2.0: @img1, @img2, @img3\n— Seedance 2.0: @Image1, @Image2, @Image3\n  (플랫폼마다 다를 수 있으니 확인 필요)\n\n역할 분리 원칙:\n— CHARACTER DESIGN — reference @img2 exactly\n— ENVIRONMENT DESIGN — reference @img1 exactly\n— WEAPON DESIGN — reference @img3 exactly\n— COSTUME — reference @img4 exactly\n— STORYBOARD — reference @img5 for composition only\n\n역할이 겹치면 모델이 혼동하여 하나를 무시한다.\n\n제한 표현 (필수):\n— "maintain exact appearance throughout, no deformation or drift"\n— "Do not alter, simplify, or reinterpret"\n— "Do not substitute or generalize"\n\n레퍼런스 수: 3~4개 한계. 많을수록 품질 저하.`,tags:['@tag','레퍼런스','역할분리','규칙'],date:'2026.05.21'},
+    {title:'조명 디렉션 — 퀄리티에 가장 큰 영향',content:`조명 설명이 모든 프롬프트 요소 중 영상 퀄리티에 가장 큰 영향을 미친다.\n퀄리티를 높이기 위해 프롬프트에 요소를 하나만 추가할 수 있다면, 조명 설명을 추가하라.\n\n전장 씬 예시:\n"Dramatic volumetric lighting — overcast sky, dust-filtered light shafts, fire glow from burning vehicles."\n\n슬로우모션 구간 예시:\n"Muzzle flash white-orange bloom (#FF6A00 core, outer bloom orange), character face lit dramatically by flash."\n\n일반 원칙:\n— 광원을 구체적으로 명시 (태양 방향, 인공광 위치 등)\n— 빛의 색온도 언급 (warm amber, cool overcast, golden hour 등)\n— 그림자와 대비 언급 (deep shadow blacks, high contrast)`,tags:['조명','퀄리티','프롬프트','핵심'],date:'2026.05.21'},
+    {title:'스토리보드 중복 언급 문제 — 판단 기준',content:`문제: 스토리보드에 이미 명시된 내용을 프롬프트에 또 쓰면 토큰 낭비 + 충돌 가능성.\n\n판단:\n— Seedance가 @img5를 잘 읽는다는 전제 → 중복 제거, 짧게\n— 스토리보드 반영률이 낮게 나오면 → 해당 샷 설명 다시 추가\n\nA/B 테스트 방법:\n버전 A: "@img5만 참고" (중복 없음)\n버전 B: "@img5 + 샷별 설명" (중복 있음)\n→ 결과 비교 후 판단\n\n현재까지 발견:\n— 상세 언급 버전: 스토리보드 잘 따라가지만 드라이브가 걸리고 자유도 없음, 퀄리티 애매\n— 미언급 버전: 퀄리티는 나은데 프롬프트를 잘 안 따름\n→ "not for visual quality or style" 분리 표현으로 중간점 찾는 중`,tags:['중복','스토리보드','A/B테스트','판단기준'],date:'2026.05.21'},
+    {title:'GPT Image 2.0 스토리보드 프롬프트 구조',content:`[문서 형식 선언]\nCreate a single landscape storyboard planning sheet image, aspect ratio 3:2, approximately 1536x1024, with a dark navy-black background (#0A0A12) and crisp white text.\n\n[언어 제한]\nAll text in English only.\n\n[헤더]\n"CUT01 (시작-끝)  「장면명」  시퀀스 유형"\n\n[테이블 — 5컬럼 (대사 없으면 6→5)]\nSHOT/TIME / START FRAME / END FRAME / CAMERA/MOVEMENT / ACTION/DIRECTION\n컬럼 비율: 8% / 28% / 28% / 18% / 18%\n"Thin white dividing lines. Exactly [N] shot rows."\n\n[비주얼 스타일]\n스타일 + 부정문 동시 기술 필수.\n색상은 헥스코드로 명시.\n슬로우모션 구간은 Shot N부터 시작임을 명시.\n\n[캐릭터/무기/배경]\n"reference @img1 exactly"\n"maintain exact appearance, Do not alter, simplify, or reinterpret"\n\n[SHOT-BY-SHOT]\n각 샷: Start / End / Camera / Action\n연속 샷 간 시각적 중복 금지.\n슬로우모션 시작 샷에 "SLOW-MO BEGINS" 명시.`,tags:['GPT','스토리보드','프롬프트구조'],date:'2026.05.21'},
+    {title:'네거티브 프롬프트 — 효과적인 표현들',content:`Seedance에서 효과적인 네거티브 표현:\n\n일반:\n— No distortion, no stretching\n— No camera reset between shots\n— No extra fingers\n— No blurry faces\n— No watermarks or text in frame\n— Face stable and not distorted\n— Natural body proportions\n— Movements are fluid and not jerky\n\n씬별:\n— No collapsed ruins — active urban warzone only (전장 씬)\n— No historical drama feel (현대 씬)\n— No generic ruins (도시 배경)\n\n주의: "no blur" 같은 부정문보다 "sharp, in-focus, high clarity" 같은 긍정문이 더 효과적인 경우도 있다.`,tags:['네거티브','프롬프트','표현'],date:'2026.05.21'},
+  ],
+  workflow:[
+    {title:'6가지 제작 방식 스펙트럼 (A~F)',content:`A — 완전 자유 (모델 재량 최대)\n레퍼런스 이미지(@img1~3)와 텍스트 프롬프트만. 스토리보드 없음.\nSeedance가 구도·카메라·흐름을 전부 자율 결정.\n모델 자율성 ★★★★★ / 재현 가능성 ★☆☆☆☆ / 적합: 탐색 초기\n\nB — 앵커 + 카메라 텍스트 제어\n레퍼런스 이미지 + 카메라 지시를 텍스트로 상세히 기술. 스토리보드 없음.\n모델 자율성 ★★★★☆ / 재현 가능성 ★★☆☆☆ / 적합: 빠른 방향성 확인\n\nC — 단일 스토리보드 → 다중 생성\n스토리보드 1개 확정 후 같은 인풋으로 영상을 여러 번 생성. 베스트 선별.\n모델 자율성 ★★★☆☆ / 재현 가능성 ★★★★☆ / 적합: 방향 확정 후 퀄리티 뽑기\n\nD — 베이스 스토리보드 + 미세 변형 5종\n마음에 안 드는 샷 1~2개만 변수를 바꿔 5종 제작. 비교 변수 고정.\n모델 자율성 ★★☆☆☆ / 재현 가능성 ★★★★★ / 적합: 연출 미세 조정\n\nE — 완전히 다른 연출 5종\n같은 씬을 전혀 다른 5가지 연출로 제작. 탐색 범위 최대.\n모델 자율성 ★☆☆☆☆ / 재현 가능성 ★★★☆☆ / 적합: 연출 방향 대규모 탐색\n\nF — 스토리보드 믹스 조합 ⚠ 비추\n여러 스토리보드에서 프레임 합성. 레퍼런스 일관성 붕괴.\n비추천 이유: 서로 다른 배치의 빛·색·캐릭터 렌더링이 달라 Seedance 앵커가 불안정.\n\n권장 조합 순서:\n프리프로덕션 → A방식 (탐색)\n프로덕션 초반 → D방식 (수렴)\n프로덕션 후반 → C방식 (퀄리티 확보)`,tags:['제작방식','A~F','스펙트럼','선택기준'],date:'2026.05.21'},
+    {title:'각 단계별 핵심 원칙',content:`프리프로덕션 전반:\n러프함이 자산이다. 가편집이 완성도가 높으면 탐색 범위가 닫힌다.\n\n타이밍 확정:\n가편집에서 샷 타이밍을 초단위로 기록 → 프로덕션 프롬프트에 그대로 명시.\n이것이 타이밍 드리프트를 줄이는 가장 현실적인 방법이다.\n\n동선과 180도 룰:\n연출이 아무리 달라도 지켜야 할 물리적 뼈대.\n흔들리면 편집에서 공간이 뒤집힌다.\n\n레퍼런스와 프롬프트:\n레퍼런스 = 앵커 (기준점)\n텍스트 프롬프트 = 미세 조정\n둘이 충돌하면 텍스처 번짐, 모션 점프, 색상 드리프트로 드러난다.\n\n스토리보드의 역할:\nSeedance는 스토리보드를 프레임 바이 프레임으로 복사하지 않는다.\n구도·무드·카메라 흐름을 해석하여 자체 퀄리티로 렌더링한다.\n스토리보드 스타일이 영상에 그대로 묻어나지 않는다.\n\nI2V vs T2V:\n핵심 컷 (얼굴 클로즈업, 감정적 장면, 오래 머무는 컷) → I2V\n빠른 동적 컷, 와이드 샷 → T2V`,tags:['핵심원칙','판단기준','전체원칙'],date:'2026.05.21'},
+    {title:'자주 하는 실수와 올바른 판단',content:`✗ 프리프로덕션에서 연출까지 확정함\n✓ 타이밍·동선·컷 순서만 확정. 앵글·연출은 프로덕션에서.\n\n✗ 가편집을 너무 완성도 있게 만듦\n✓ 러프할수록 좋다. 완성도가 높으면 탐색 범위가 줄어든다.\n\n✗ 스토리보드 프레임을 서로 다른 배치에서 섞어 조합 (F방식)\n✓ 각 배치의 빛·색·캐릭터 렌더링이 달라 Seedance 앵커가 불안정해진다.\n\n✗ 레퍼런스를 너무 많이 넣음\n✓ 레퍼런스는 3~4개 한계. 많을수록 품질 저하.\n\n✗ 핵심 컷도 T2V로 처리함\n✓ 얼굴 클로즈업·감정적 컷은 반드시 I2V로 별도 생성.\n\n✗ 아쉬운 구간 때문에 전체를 다시 돌림\n✓ Video Edit으로 해당 구간만 수정. 전체 재생성은 다른 샷 퀄리티를 바꿈.\n\n✗ 연속된 샷 간 시각적 중복\n✓ 이전 샷 끝 장면을 다음 샷 시작으로 반복 금지.\n\n✗ @tag를 자연어로 표현\n✓ 플랫폼별 정확한 @tag 형식 사용.`,tags:['실수','판단기준','체크리스트'],date:'2026.05.21'},
+  ]
+};
+
+let cur=null;
+
+function getKey(id){return 'aivkb_'+id;}
+function load(id){try{const r=localStorage.getItem(getKey(id));return r?JSON.parse(r):[];}catch(e){return[];}}
+function save(id,arr){try{localStorage.setItem(getKey(id),JSON.stringify(arr));}catch(e){}}
+
+function seedAll(){
+  for(const s of SECTIONS){
+    const ex=load(s.id);
+    if(ex.length===0&&SEED[s.id]){
+      const entries=SEED[s.id].map((e,i)=>({...e,id:Date.now()+i}));
+      save(s.id,entries);
+    }
+  }
+}
+
+function totalCount(){return SECTIONS.reduce((a,s)=>a+load(s.id).length,0);}
+
+function renderNav(){
+  const sel=document.getElementById('f-section');
+  sel.innerHTML=SECTIONS.map(s=>`<option value="${s.id}"${cur&&cur.id===s.id?' selected':''}>${s.label}</option>`).join('');
+  document.getElementById('nav').innerHTML=SECTIONS.map(s=>{
+    const count=load(s.id).length;
+    const active=cur&&cur.id===s.id?' active':'';
+    return `<div class="nav-item${active}" onclick="selectSection('${s.id}')" style="${active?'--c:'+s.color:''}">
+      <span class="nav-label">${s.label}</span>
+      <span class="nav-count" style="${active?'background:'+s.color:''}">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectSection(id){
+  cur=SECTIONS.find(s=>s.id===id);
+  document.getElementById('main-title').textContent=cur.label;
+  document.getElementById('main-desc').textContent=cur.desc;
+  document.getElementById('add-btn').style.display='block';
+  document.getElementById('add-btn').style.borderColor=cur.color;
+  document.getElementById('add-btn').style.color=cur.color;
+  renderNav();
+  renderEntries();
+}
+
+function renderEntries(){
+  const el=document.getElementById('entries');
+  const entries=load(cur.id);
+  const cs=document.getElementById('count-summary');
+  if(entries.length>0){
+    cs.style.display='flex';
+    cs.innerHTML=`<div class="count-item"><span>${entries.length}</span>개 항목</div><div class="count-item"><span>${cur.label}</span></div>`;
+  } else {
+    cs.style.display='none';
+  }
+  if(!entries.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">◈</div><p>아직 항목이 없어요.<br>새로 발견한 기술이나 원칙을 추가해보세요.</p></div>`;
+    return;
+  }
+  const color=cur.color;
+  el.innerHTML=[...entries].reverse().map((e,ri)=>{
+    const i=entries.length-1-ri;
+    const tags=e.tags?e.tags.map(t=>`<span class="tag">${t}</span>`).join(''):'';
+    return `<div class="entry" style="border-left-color:${color}">
+      <div class="entry-header">
+        <div class="entry-title">${e.title}</div>
+        <div class="entry-meta">${e.date}</div>
+      </div>
+      <div class="entry-content">${e.content}</div>
+      <div class="entry-footer">
+        <div class="entry-tags">${tags}</div>
+        <div class="entry-actions">
+          <button class="btn btn-sm btn-danger" onclick="deleteEntry(${i})">삭제</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openModal(){
+  document.getElementById('f-title').value='';
+  document.getElementById('f-content').value='';
+  document.getElementById('f-tags').value='';
+  document.getElementById('section-select-group').style.display='block';
+  if(cur) document.getElementById('f-section').value=cur.id;
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('f-title').focus(),200);
+}
+
+function closeModal(){document.getElementById('overlay').classList.remove('show');}
+function handleOverlayClick(e){if(e.target.id==='overlay')closeModal();}
+
+function saveEntry(){
+  const sectionId=document.getElementById('f-section').value;
+  const title=document.getElementById('f-title').value.trim();
+  const content=document.getElementById('f-content').value.trim();
+  const tagsRaw=document.getElementById('f-tags').value.trim();
+  if(!title||!content){showToast('제목과 내용을 입력해주세요','#FF4444');return;}
+  const tags=tagsRaw?tagsRaw.split(',').map(t=>t.trim()).filter(Boolean):[];
+  const now=new Date();
+  const date=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+  const entries=load(sectionId);
+  entries.push({id:Date.now(),title,content,tags,date});
+  save(sectionId,entries);
+  closeModal();
+  showToast('저장되었습니다');
+  if(cur&&cur.id===sectionId){renderEntries();}
+  renderNav();
+}
+
+function deleteEntry(index){
+  if(!confirm('이 항목을 삭제할까요?'))return;
+  const entries=load(cur.id);
+  entries.splice(index,1);
+  save(cur.id,entries);
+  showToast('삭제되었습니다','#FF6A00');
+  renderEntries();
+  renderNav();
+}
+
+function showToast(msg,color='#00BB77'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=color;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('overlay').classList.contains('show'))saveEntry();
+});
+
+seedAll();
+renderNav();
+selectSection('planning');
+</script>
+</body>
+</html>
