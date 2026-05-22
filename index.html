@@ -3,313 +3,912 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Video KB</title>
+<title>생성형 AI 영상 제작 프로세스</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--accent:#4A9EFF;--orange:#FF6A00;--bg:#0A0A12;--surface:#141420;--surface2:#1C1C2C;--border:#2A2A3C;--text:#F0F0F0;--muted:#888;--green:#00BB77;--red:#FF4444;--purple:#BB77FF;--yellow:#FFB700}
-body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
-.app{display:flex;flex:1;overflow:hidden}
-.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
-.logo{font-size:10px;letter-spacing:3px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:4px}
-.logo-sub{font-size:10px;color:var(--muted)}
-.nav{flex:1;overflow-y:auto;padding:8px 0}
-.nav-item{padding:10px 16px;cursor:pointer;border-left:2px solid transparent;display:flex;justify-content:space-between;align-items:center;transition:all .15s;user-select:none}
-.nav-item:hover{background:var(--surface2)}
-.nav-item.active{border-left-color:var(--accent);background:var(--surface2)}
-.nav-item.active .nav-label{color:var(--accent)}
-.nav-label{font-size:12px;font-weight:500}
-.nav-count{font-size:10px;padding:2px 7px;border-radius:10px;min-width:22px;text-align:center;background:var(--border);color:var(--muted)}
-.nav-item.active .nav-count{color:white}
-.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:10px;color:var(--muted)}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.main-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0}
-.header-left{}
-.section-title{font-size:16px;font-weight:700}
-.section-desc{font-size:11px;color:var(--muted);margin-top:2px}
-.btn{padding:7px 14px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:12px;font-family:inherit;cursor:pointer;font-weight:500;border-radius:3px;transition:all .15s;white-space:nowrap}
-.btn:hover{background:var(--accent);color:var(--bg)}
-.btn-sm{padding:4px 10px;font-size:11px}
-.btn-danger{border-color:var(--red);color:var(--red)}
-.btn-danger:hover{background:var(--red);color:white}
-.btn-muted{border-color:var(--muted);color:var(--muted)}
-.btn-muted:hover{background:var(--muted);color:var(--bg)}
-.entries{flex:1;overflow-y:auto;padding:16px 20px}
-.entry{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);margin-bottom:12px;padding:14px 16px;transition:border-color .15s}
-.entry:hover{border-color:var(--accent)}
-.entry-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.entry-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4}
-.entry-meta{font-size:10px;color:var(--muted);white-space:nowrap;margin-left:12px;flex-shrink:0;padding-top:2px}
-.entry-content{font-size:12px;color:#CCC;line-height:1.85;white-space:pre-wrap;word-break:break-word}
-.entry-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-.entry-tags{display:flex;gap:5px;flex-wrap:wrap}
-.tag{font-size:10px;padding:2px 8px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:2px}
-.entry-actions{display:flex;gap:6px;flex-shrink:0;margin-left:12px}
-.empty{text-align:center;padding:80px 20px;color:var(--muted)}
-.empty-icon{font-size:36px;opacity:.15;margin-bottom:16px}
-.empty p{font-size:12px;line-height:1.8}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
-.overlay.show{opacity:1;pointer-events:all}
-.modal{background:var(--surface);border:1px solid var(--border);width:600px;max-height:85vh;display:flex;flex-direction:column;transform:translateY(16px);transition:transform .2s}
-.overlay.show .modal{transform:translateY(0)}
-.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.modal-title{font-size:14px;font-weight:700}
-.modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:0 2px}
-.modal-close:hover{color:var(--text)}
-.modal-body{padding:20px;overflow-y:auto;flex:1}
-.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
-.form-group{margin-bottom:16px}
-.form-label{font-size:10px;color:var(--muted);margin-bottom:5px;display:block;letter-spacing:1px;text-transform:uppercase;font-weight:500}
-.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-size:13px;font-family:inherit;outline:none;border-radius:2px;transition:border-color .15s}
-.form-input:focus{border-color:var(--accent)}
-.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-size:13px;font-family:inherit;outline:none;border-radius:2px;cursor:pointer}
-.form-select:focus{border-color:var(--accent)}
-.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-size:12px;font-family:inherit;outline:none;resize:vertical;min-height:180px;line-height:1.85;border-radius:2px;transition:border-color .15s}
-.form-textarea:focus{border-color:var(--accent)}
-.form-hint{font-size:10px;color:var(--muted);margin-top:4px}
-.toast{position:fixed;bottom:24px;right:24px;color:white;padding:10px 18px;font-size:12px;font-weight:500;z-index:200;opacity:0;transition:opacity .25s;border-radius:2px;pointer-events:none}
-.toast.show{opacity:1}
-.count-summary{display:flex;gap:12px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.count-item{font-size:10px;color:var(--muted)}
-.count-item span{color:var(--text);font-weight:700;margin-right:2px}
+  :root {
+    --black:#0A0A12; --white:#F8F8F8; --accent:#4A9EFF; --orange:#FF6A00;
+    --gray:#888; --lgray:#F2F2F4; --dgray:#1A1A1A; --mgray:#DDDDE0;
+    --green:#006633; --red:#AA0000; --bluebg:#EEF4FF; --codbg:#F0F4FF;
+    --sidebar-w:220px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo',sans-serif; background:#F6F6F8; color:var(--dgray); line-height:1.8; font-size:15px; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position:fixed; left:0; top:0; height:100vh; width:var(--sidebar-w);
+    background:var(--black); overflow-y:auto; z-index:200;
+    display:flex; flex-direction:column;
+    scrollbar-width:thin; scrollbar-color:#333 transparent;
+  }
+  .sidebar::-webkit-scrollbar { width:4px; }
+  .sidebar::-webkit-scrollbar-thumb { background:#333; }
+  .sidebar-logo { padding:20px 18px 14px; border-bottom:1px solid #1E1E2E; }
+  .sidebar-logo-text { font-size:11px; letter-spacing:2px; color:var(--accent); font-weight:700; text-transform:uppercase; }
+  .sidebar-logo-sub { font-size:9px; color:#555; margin-top:3px; }
+  .sidebar-section-label { padding:14px 18px 4px; font-size:9px; letter-spacing:2px; color:#444; font-weight:700; text-transform:uppercase; }
+  .sidebar-link { display:flex; align-items:center; gap:8px; padding:7px 18px; text-decoration:none; color:#999; font-size:11.5px; transition:all .15s; border-left:2px solid transparent; }
+  .sidebar-link:hover { color:var(--white); background:rgba(255,255,255,.04); }
+  .sidebar-link.active { color:var(--accent); border-left-color:var(--accent); background:rgba(74,158,255,.08); }
+  .sidebar-link .ch-num { font-size:9px; color:#444; font-weight:700; min-width:16px; }
+  .sidebar-link.active .ch-num { color:var(--accent); }
+  .sidebar-divider { height:1px; background:#1E1E2E; margin:8px 0; }
+  .sidebar-ext { display:flex; align-items:center; gap:8px; padding:6px 18px; text-decoration:none; color:#666; font-size:11px; transition:color .15s; }
+  .sidebar-ext:hover { color:var(--accent); }
+  .sidebar-ext-icon { font-size:10px; opacity:.6; }
+
+  /* ── MAIN LAYOUT ── */
+  .page-wrap { margin-left:var(--sidebar-w); }
+  .cover { background:var(--black); color:var(--white); padding:70px 60px 50px; }
+  .cover-tag { font-size:11px; letter-spacing:3px; color:var(--accent); font-weight:500; margin-bottom:20px; text-transform:uppercase; }
+  .cover-title { font-size:44px; font-weight:900; line-height:1.15; margin-bottom:16px; letter-spacing:-1px; }
+  .cover-title span { color:var(--accent); }
+  .cover-sub { font-size:14px; color:#888; font-weight:300; }
+  .container { max-width:860px; padding:0 48px 100px; }
+  .toc { background:var(--white); border-left:4px solid var(--accent); padding:28px 32px; margin:36px 0; }
+  .toc-title { font-size:11px; letter-spacing:3px; color:var(--accent); font-weight:700; margin-bottom:14px; text-transform:uppercase; }
+  .toc-item { display:flex; align-items:baseline; gap:14px; padding:5px 0; border-bottom:1px solid var(--mgray); text-decoration:none; color:var(--dgray); font-size:13.5px; }
+  .toc-item:last-child { border-bottom:none; }
+  .toc-num { color:var(--accent); font-weight:700; font-size:12px; min-width:22px; }
+  .toc-item:hover { color:var(--accent); }
+
+  /* ── CHAPTER ── */
+  .chapter { margin-top:68px; scroll-margin-top:24px; }
+  .chapter-header { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
+  .chapter-num { background:var(--black); color:var(--accent); font-size:11px; font-weight:700; letter-spacing:2px; padding:4px 10px; }
+  .chapter-title { font-size:23px; font-weight:900; color:var(--black); letter-spacing:-.5px; }
+  .chapter-divider { height:1px; background:var(--mgray); margin-bottom:22px; }
+  .section-label { font-size:11px; font-weight:700; color:var(--accent); letter-spacing:2px; margin:28px 0 10px; text-transform:uppercase; }
+  p { margin-bottom:12px; font-size:14.5px; line-height:1.85; color:#2A2A2A; }
+
+  /* ── STEP ── */
+  .step { display:grid; grid-template-columns:48px 1fr; margin-bottom:14px; border:1px solid var(--mgray); }
+  .step-num { background:var(--accent); color:white; font-size:18px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+  .step-body { background:var(--lgray); padding:18px 22px; }
+  .step-title { font-size:15px; font-weight:700; color:var(--black); margin-bottom:8px; }
+  .step-desc { font-size:13.5px; line-height:1.8; color:#333; }
+
+  /* ── LOCK/OPEN ── */
+  .lists-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .list-box { padding:12px 14px; font-size:12.5px; line-height:1.75; }
+  .list-box.lock { background:#EDFAF3; border-left:3px solid var(--green); }
+  .list-box.open { background:#EEF4FF; border-left:3px solid var(--accent); }
+  .list-box.neutral { background:#F5F5F5; border-left:3px solid var(--gray); }
+  .list-label { font-size:10px; letter-spacing:2px; font-weight:700; margin-bottom:6px; text-transform:uppercase; }
+  .list-box.lock .list-label { color:var(--green); }
+  .list-box.open .list-label { color:var(--accent); }
+  .list-box.neutral .list-label { color:var(--gray); }
+  .list-box li { list-style:none; padding-left:14px; position:relative; color:#2A2A2A; }
+  .list-box.lock li::before { content:'✓'; position:absolute; left:0; color:var(--green); font-size:11px; }
+  .list-box.open li::before { content:'○'; position:absolute; left:0; color:var(--accent); font-size:10px; }
+  .list-box.neutral li::before { content:'—'; position:absolute; left:0; color:var(--gray); font-size:10px; }
+
+  /* ── NOTE ── */
+  .note { background:#FFFBF0; border-left:3px solid var(--orange); padding:11px 15px; margin-top:10px; font-size:12.5px; color:#5A3A00; line-height:1.7; }
+  .note::before { content:'※ '; font-weight:700; }
+
+  /* ── INFO BOX ── */
+  .info-box { padding:16px 20px; margin:18px 0; font-size:13.5px; line-height:1.8; }
+  .info-box.blue { background:var(--bluebg); border-left:4px solid var(--accent); }
+  .info-box.orange { background:#FFF8EE; border-left:4px solid var(--orange); }
+  .info-box.gray { background:var(--lgray); border-left:4px solid var(--mgray); }
+  .info-box-title { font-size:11px; letter-spacing:2px; font-weight:700; margin-bottom:8px; text-transform:uppercase; }
+  .info-box.blue .info-box-title { color:var(--accent); }
+  .info-box.orange .info-box-title { color:var(--orange); }
+  .info-box.gray .info-box-title { color:var(--gray); }
+  .info-box li { list-style:none; padding-left:14px; position:relative; margin-bottom:3px; }
+  .info-box li::before { content:'—'; position:absolute; left:0; color:var(--gray); }
+
+  /* ── FLOW ── */
+  .flow { display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin:18px 0; border:1px solid var(--mgray); }
+  .flow-item { padding:18px; }
+  .flow-item:not(:last-child) { border-right:1px solid var(--mgray); }
+  .flow-step-num { font-size:10px; letter-spacing:2px; font-weight:700; color:var(--accent); margin-bottom:6px; text-transform:uppercase; }
+  .flow-step-title { font-size:13.5px; font-weight:700; margin-bottom:6px; }
+  .flow-step-body { font-size:12px; line-height:1.7; color:#555; }
+
+  /* ── TABLE ── */
+  table { width:100%; border-collapse:collapse; margin:18px 0; font-size:13px; }
+  th { background:var(--black); color:white; padding:9px 13px; font-weight:500; text-align:left; font-size:11.5px; }
+  td { padding:9px 13px; border-bottom:1px solid var(--mgray); vertical-align:top; line-height:1.7; }
+  tr:nth-child(even) td { background:var(--lgray); }
+  tr:nth-child(odd) td { background:white; }
+  .td-method { font-weight:900; font-size:17px; color:var(--accent); text-align:center; }
+  .td-stars { text-align:center; font-size:11px; }
+
+  /* ── PRINCIPLE ── */
+  .principle { display:grid; grid-template-columns:130px 1fr; border:1px solid var(--mgray); margin-bottom:9px; }
+  .principle-label { background:var(--lgray); padding:14px; font-size:12px; font-weight:700; color:var(--accent); display:flex; align-items:center; }
+  .principle-body { padding:14px 18px; font-size:13.5px; line-height:1.8; color:#2A2A2A; background:white; }
+
+  /* ── MISTAKE ── */
+  .mistakes-wrap { border:1px solid var(--mgray); margin:18px 0; }
+  .mistake-header { display:grid; grid-template-columns:1fr 1fr; background:var(--black); }
+  .mistake-header div { padding:9px 14px; color:white; font-size:12px; font-weight:500; }
+  .mistake-row { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--mgray); }
+  .mistake-row:last-child { border-bottom:none; }
+  .mistake-bad { padding:11px 14px; font-size:13px; color:var(--red); line-height:1.7; background:white; border-right:1px solid var(--mgray); }
+  .mistake-good { padding:11px 14px; font-size:13px; color:var(--green); line-height:1.7; background:var(--lgray); }
+
+  /* ── PROMPT BLOCK ── */
+  .prompt-block { margin:18px 0; border:1px solid var(--mgray); }
+  .prompt-header { display:flex; align-items:center; gap:10px; background:var(--black); padding:8px 14px; }
+  .prompt-tag { font-size:9px; letter-spacing:2px; color:var(--accent); font-weight:700; text-transform:uppercase; background:rgba(74,158,255,.15); padding:2px 7px; border:1px solid var(--accent); }
+  .prompt-title { font-size:12px; color:white; font-weight:500; }
+  .prompt-tool { font-size:10px; color:#888; margin-left:auto; }
+  .prompt-section { padding:14px 16px; }
+  .prompt-section+.prompt-section { border-top:1px solid var(--mgray); }
+  .prompt-lang-label { font-size:9px; letter-spacing:2px; font-weight:700; color:var(--accent); text-transform:uppercase; margin-bottom:7px; }
+  .prompt-section.en { background:var(--codbg); }
+  .prompt-section.ko { background:var(--lgray); }
+  .prompt-section.en pre { font-family:'SF Mono','Consolas',monospace; font-size:11.5px; line-height:1.75; white-space:pre-wrap; color:#1A1A2E; }
+  .prompt-section.ko p { font-size:12.5px; line-height:1.8; color:#333; margin:0; }
+  .prompt-tbd { background:var(--lgray); border:1px dashed var(--mgray); padding:14px 18px; margin:16px 0; font-size:12.5px; color:var(--gray); }
+  .prompt-tbd::before { content:'🔧 '; }
+
+  /* ── ANCHOR TABLE ── */
+  .anchor-table { width:100%; border-collapse:collapse; margin:14px 0; }
+  .anchor-table th { background:var(--black); color:white; padding:7px 13px; font-size:11px; font-weight:500; }
+  .anchor-table td { padding:8px 13px; border-bottom:1px solid var(--mgray); font-size:13px; vertical-align:middle; }
+  .anchor-table tr:nth-child(even) td { background:var(--lgray); }
+  .anchor-table tr:nth-child(odd) td { background:white; }
+  .anchor-id { font-weight:700; color:var(--accent); }
+
+  /* ── GITHUB STEPS ── */
+  .gh-step { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start; }
+  .gh-num { background:var(--accent); color:white; font-size:11px; font-weight:700; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .gh-body { font-size:13.5px; line-height:1.8; color:#2A2A2A; }
+  .code-inline { background:var(--codbg); border:1px solid #C8D8FF; padding:1px 6px; font-family:monospace; font-size:11.5px; color:#1A1A2E; border-radius:2px; }
+
+  /* ── RESOURCE LINKS ── */
+  .resource-card { display:flex; align-items:center; gap:16px; background:white; border:1px solid var(--mgray); padding:16px 20px; margin-bottom:10px; text-decoration:none; color:var(--dgray); transition:border-color .15s; }
+  .resource-card:hover { border-color:var(--accent); }
+  .resource-icon { font-size:20px; flex-shrink:0; }
+  .resource-body { flex:1; }
+  .resource-title { font-size:14px; font-weight:700; margin-bottom:2px; }
+  .resource-url { font-size:11px; color:var(--gray); font-family:monospace; }
+  .resource-desc { font-size:12.5px; color:#555; margin-top:3px; }
+  .resource-arrow { color:var(--accent); font-size:16px; }
+
+  /* ── TEST LOG ── */
+  .test-card { display:grid; grid-template-columns:90px 1fr auto; gap:14px; align-items:center; background:white; border:1px solid var(--mgray); padding:14px 18px; margin-bottom:9px; text-decoration:none; color:var(--dgray); transition:border-color .15s; }
+  .test-card:hover { border-color:var(--accent); }
+  .test-date { font-size:11px; color:var(--gray); font-weight:500; }
+  .test-title { font-size:14px; font-weight:700; }
+  .test-desc { font-size:12px; color:var(--gray); margin-top:2px; }
+  .test-arrow { color:var(--accent); font-size:16px; }
+
+  /* ── FOOTER ── */
+  .footer { margin-top:80px; padding-top:18px; border-top:1px solid var(--mgray); text-align:center; font-size:12px; color:var(--gray); }
+
+  /* ── MOBILE ── */
+  @media(max-width:768px) {
+    .sidebar { width:100%; height:auto; position:relative; }
+    .page-wrap { margin-left:0; }
+    .flow { grid-template-columns:1fr; }
+    .flow-item:not(:last-child) { border-right:none; border-bottom:1px solid var(--mgray); }
+    .lists-row { grid-template-columns:1fr; }
+    .principle { grid-template-columns:1fr; }
+    .mistake-row { grid-template-columns:1fr; }
+    .mistake-bad { border-right:none; border-bottom:1px solid var(--mgray); }
+    .container { padding:0 20px 80px; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">AI Video KB</div>
-      <div class="logo-sub">생성형 AI 영상 지식 베이스</div>
-    </div>
-    <div class="nav" id="nav"></div>
-    <div class="sidebar-footer">로컬 저장 · 브라우저 유지</div>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-text">AI Video KB</div>
+    <div class="sidebar-logo-sub">생성형 AI 영상 제작 v2.0</div>
   </div>
-  <div class="main">
-    <div class="main-header">
-      <div class="header-left">
-        <div class="section-title" id="main-title">섹션을 선택하세요</div>
-        <div class="section-desc" id="main-desc"></div>
-      </div>
-      <button class="btn" id="add-btn" style="display:none" onclick="openModal()">+ 새 항목 추가</button>
-    </div>
-    <div class="count-summary" id="count-summary" style="display:none"></div>
-    <div class="entries" id="entries">
-      <div class="empty"><div class="empty-icon">◈</div><p>왼쪽에서 섹션을 선택하세요</p></div>
-    </div>
+
+  <div class="sidebar-section-label">챕터</div>
+  <a class="sidebar-link active" href="#ch01" data-ch="ch01"><span class="ch-num">01</span>지식베이스 사용법</a>
+  <a class="sidebar-link" href="#ch02" data-ch="ch02"><span class="ch-num">02</span>왜 이렇게 만드는가</a>
+  <a class="sidebar-link" href="#ch03" data-ch="ch03"><span class="ch-num">03</span>프리프로덕션</a>
+  <a class="sidebar-link" href="#ch04" data-ch="ch04"><span class="ch-num">04</span>프로덕션</a>
+  <a class="sidebar-link" href="#ch05" data-ch="ch05"><span class="ch-num">05</span>포스트 프로덕션</a>
+  <a class="sidebar-link" href="#ch06" data-ch="ch06"><span class="ch-num">06</span>6가지 방식 스펙트럼</a>
+  <a class="sidebar-link" href="#ch07" data-ch="ch07"><span class="ch-num">07</span>핵심 원칙</a>
+  <a class="sidebar-link" href="#ch08" data-ch="ch08"><span class="ch-num">08</span>자주 하는 실수</a>
+  <a class="sidebar-link" href="#ch09" data-ch="ch09"><span class="ch-num">09</span>테스트 로그</a>
+  <a class="sidebar-link" href="#ch10" data-ch="ch10"><span class="ch-num">10</span>참고 자료 링크</a>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section-label">테스트 로그</div>
+  <!-- TEST LOG LINKS — 새 테스트 추가 시 여기에 추가 -->
+  <a class="sidebar-ext" href="tests/test_01.html" style="display:none"><span class="sidebar-ext-icon">▶</span>TEST #01</a>
+  <span style="padding:6px 18px; font-size:11px; color:#333;">아직 없음</span>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section-label">참고 자료</div>
+  <a class="sidebar-ext" href="https://soylab.ai/seedance20" target="_blank"><span class="sidebar-ext-icon">↗</span>Seedance 2.0 가이드</a>
+  <a class="sidebar-ext" href="https://oasis-dentist-28a.notion.site/Seedance-2-0-33e7425e6122806487dfe069d1aa8eca" target="_blank"><span class="sidebar-ext-icon">↗</span>Seedance 보고서 (Notion)</a>
+</nav>
+
+<!-- ── PAGE WRAP ── -->
+<div class="page-wrap">
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-tag">Personal Reference · v2.0 · 2026</div>
+  <div class="cover-title">생성형 AI 영상<br><span>제작 프로세스</span></div>
+  <div class="cover-sub">Seedance 2.0 기반 프리프로덕션 · 프로덕션 · 포스트프로덕션 워크플로우</div>
+</div>
+
+<div class="container">
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">목차</div>
+  <a class="toc-item" href="#ch01"><span class="toc-num">01</span>지식베이스 사용법</a>
+  <a class="toc-item" href="#ch02"><span class="toc-num">02</span>왜 이렇게 만드는가 — 기술적 근거와 전체 흐름</a>
+  <a class="toc-item" href="#ch03"><span class="toc-num">03</span>프리프로덕션 — 흐름 탐색과 컨펌</a>
+  <a class="toc-item" href="#ch04"><span class="toc-num">04</span>프로덕션 — 본격 제작</a>
+  <a class="toc-item" href="#ch05"><span class="toc-num">05</span>포스트 프로덕션</a>
+  <a class="toc-item" href="#ch06"><span class="toc-num">06</span>6가지 제작 방식 스펙트럼</a>
+  <a class="toc-item" href="#ch07"><span class="toc-num">07</span>핵심 원칙</a>
+  <a class="toc-item" href="#ch08"><span class="toc-num">08</span>자주 하는 실수와 판단 기준</a>
+  <a class="toc-item" href="#ch09"><span class="toc-num">09</span>테스트 로그</a>
+  <a class="toc-item" href="#ch10"><span class="toc-num">10</span>참고 자료 링크</a>
+</div>
+
+<!-- ============================
+     CH01
+     ============================ -->
+<div class="chapter" id="ch01">
+  <div class="chapter-header"><div class="chapter-num">01</div><div class="chapter-title">지식베이스 사용법</div></div>
+  <div class="chapter-divider"></div>
+  <p>이 문서는 GitHub Pages로 배포되며, Claude와 함께 지속적으로 업데이트한다. 내용이 추가되거나 수정될 때마다 새 파일을 받아 GitHub에 덮어쓰기하면 URL은 유지된 채로 내용이 갱신된다.</p>
+  <p>GitHub 주소: <strong>https://fvrtdara.github.io/ai-video-kb/</strong></p>
+
+  <div class="section-label">문서 업데이트 방법</div>
+  <div class="gh-step"><div class="gh-num">1</div><div class="gh-body">Claude에게 업데이트할 내용을 전달한다.<br><span style="color:var(--gray);font-size:12.5px;">예: "프로덕션 Step 2 내용을 이걸로 바꿔줘" → Claude가 GitHub URL을 fetch하여 최신 파일을 읽고 해당 부분만 수정한 전체 파일을 제공한다.</span></div></div>
+  <div class="gh-step"><div class="gh-num">2</div><div class="gh-body">새로 받은 <span class="code-inline">index.html</span> 파일을 다운로드한다.</div></div>
+  <div class="gh-step"><div class="gh-num">3</div><div class="gh-body">GitHub 저장소 <strong>FVRTdara/ai-video-kb</strong> 접속 → <strong>Add file → Upload files</strong> → 파일 드래그 앤 드롭 → <strong>Commit changes</strong></div></div>
+  <div class="gh-step"><div class="gh-num">4</div><div class="gh-body">1~2분 후 URL에서 업데이트된 내용을 확인한다.</div></div>
+
+  <div class="section-label">테스트 로그 추가 방법</div>
+  <div class="gh-step"><div class="gh-num">1</div><div class="gh-body">Claude에게 새 테스트 로그 페이지 생성을 요청한다. 사용한 프롬프트, Google Drive 영상 파일 ID, 인사이트를 함께 전달한다.</div></div>
+  <div class="gh-step"><div class="gh-num">2</div><div class="gh-body">받은 파일을 GitHub에서 파일명 <span class="code-inline">tests/test_01.html</span> 형태로 업로드한다. 폴더가 없으면 자동 생성된다.</div></div>
+  <div class="gh-step"><div class="gh-num">3</div><div class="gh-body">사이드바 테스트 로그 목록 및 09챕터 목록에 링크 추가를 Claude에게 요청한다.</div></div>
+
+  <div class="section-label">Google Drive 영상 임베드 방법</div>
+  <div class="gh-step"><div class="gh-num">1</div><div class="gh-body">Google Drive 영상 파일 → 우클릭 → 공유 → 링크가 있는 모든 사용자로 설정</div></div>
+  <div class="gh-step"><div class="gh-num">2</div><div class="gh-body">공유 링크에서 파일 ID 추출: <span class="code-inline">https://drive.google.com/file/d/<strong>파일ID</strong>/view</span></div></div>
+  <div class="gh-step"><div class="gh-num">3</div><div class="gh-body">테스트 로그 페이지 생성 요청 시 파일 ID를 Claude에게 전달하면 자동 임베드된다.</div></div>
+</div>
+
+<!-- ============================
+     CH02
+     ============================ -->
+<div class="chapter" id="ch02">
+  <div class="chapter-header"><div class="chapter-num">02</div><div class="chapter-title">왜 이렇게 만드는가 — 기술적 근거와 전체 흐름</div></div>
+  <div class="chapter-divider"></div>
+  <p>이 문서는 생성형 AI를 활용한 영상 제작의 전체 프로세스를 정리한 개인 참고 자료다. 프리프로덕션(흐름 탐색 및 컨펌)부터 프로덕션(본격 제작 및 편집 조합)까지의 단계별 판단 기준과 자주 하는 실수를 담고 있다.</p>
+
+  <div class="section-label">Seedance 2.0 작동 원리</div>
+  <div class="info-box blue">
+    <div class="info-box-title">이 프로세스가 만들어진 배경</div>
+    <ul>
+      <li>Seedance 2.0은 레퍼런스 이미지와 프롬프트를 앵커로 영상을 생성한다.</li>
+      <li>모델의 재량을 존중할수록 예측 불가능하지만 창의적인 결과가 나온다.</li>
+      <li>제어를 높일수록 의도한 연출을 구현할 수 있지만 탐색 범위가 좁아진다.</li>
+      <li>이 프로세스는 두 가지 균형을 단계별로 조율하는 방식으로 설계되었다.</li>
+    </ul>
+  </div>
+
+  <div class="section-label">4레인 앵커 아키텍처</div>
+  <p>Seedance 2.0에서 퀄리티와 일관성을 동시에 확보하려면 각 인풋이 명확한 역할을 가져야 한다. 역할이 겹치면 모델이 혼동하여 결과물에 블리딩(bleeding)이 발생한다.</p>
+  <table class="anchor-table">
+    <thead><tr><th>레인</th><th>담당 인풋</th><th>역할</th><th>침범 시 증상</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--accent)">연출 앵커</strong></td><td>스케치 스토리보드 (@img5)</td><td>구도·카메라·샷 흐름</td><td>포토리얼 스토리보드 사용 시 화질 블리딩</td></tr>
+      <tr><td><strong style="color:var(--accent)">스타일 앵커</strong></td><td>캐릭터·배경·프랍 시트 (@img1~4)</td><td>캐릭터·환경·소품 일관성</td><td>레퍼런스 과다 시 우선순위 혼동</td></tr>
+      <tr><td><strong style="color:var(--accent)">퀄리티 앵커</strong></td><td>키컷 고퀄 프레임 (@img6)</td><td>비주얼 퀄리티 기준선 — 인물+배경+조명+재질의 통합 기준</td><td>포즈 강한 이미지 사용 시 T2V에서 동작 고정</td></tr>
+      <tr><td><strong style="color:var(--accent)">텍스트</strong></td><td>프롬프트</td><td>조명·재질·분위기·모션</td><td>외모 재설명 시 토큰 낭비·충돌</td></tr>
+    </tbody>
+  </table>
+  <div class="info-box orange">
+    <div class="info-box-title">퀄리티 앵커 선정 기준</div>
+    <ul>
+      <li>그 앵글로 나와도 괜찮은 컨펌된 구도일 것</li>
+      <li>배경 분위기와 조명이 잘 드러나는 컷일 것</li>
+      <li>캐릭터에 라이팅이 제대로 적용된 컷일 것</li>
+      <li>캐릭터와 배경의 합성 퀄리티가 자연스러운 컷일 것</li>
+      <li>포즈가 지나치게 강하면 T2V에서 포즈 고정 이슈 발생 — I2V START FRAME 전용으로 활용</li>
+    </ul>
+  </div>
+
+  <div class="section-label">전체 프로세스 한눈에 보기</div>
+  <div class="flow">
+    <div class="flow-item"><div class="flow-step-num">Pre-Production · 1단계</div><div class="flow-step-title">빠른 탐색 및 가편집</div><div class="flow-step-body">대략적 앵커 + 프롬프트로 720p 영상 다수 생성 → 가편집 → 타이밍·동선·컷 순서 확정</div></div>
+    <div class="flow-item"><div class="flow-step-num">Pre-Production · 2단계</div><div class="flow-step-title">컨펌</div><div class="flow-step-body">관계자에게 흐름·동선 컨펌. 퀄리티·빛·앵커 정확도는 무시. 흐름만 본다.</div></div>
+    <div class="flow-item"><div class="flow-step-num">Production · 1단계</div><div class="flow-step-title">앵커 정교화 · 스토리보드</div><div class="flow-step-body">씬 상태 반영 앵커 고도화. 실사 스토리보드 → 키컷 → 퀄리티 앵커 → 스케치 변환.</div></div>
+  </div>
+  <div class="flow" style="margin-top:0;border-top:none;">
+    <div class="flow-item"><div class="flow-step-num">Production · 2단계</div><div class="flow-step-title">영상 6종 생성 및 편집</div><div class="flow-step-body">스케치 5종 + 프롬프트만 1종. 샷 단위 베스트 선정 → 편집 조합.</div></div>
+    <div class="flow-item"><div class="flow-step-num">Production · 3단계</div><div class="flow-step-title">핵심 컷 집중 생성</div><div class="flow-step-body">베스트 반복 생성. 핵심 컷은 START FRAME + 프롬프팅으로 I2V 단독 생성.</div></div>
+    <div class="flow-item"><div class="flow-step-num">Production · 4단계</div><div class="flow-step-title">부분 수정</div><div class="flow-step-body">Video Extend / Video Edit으로 특정 구간만 보정. 전체 재생성은 최후 수단.</div></div>
+  </div>
+  <div class="info-box orange">
+    <div class="info-box-title">핵심 원칙</div>
+    <ul>
+      <li>프리프로덕션은 최대한 러프하게. 타이밍과 동선만 잠그고 나머지는 전부 열어둔다.</li>
+      <li>프로덕션은 탐색(6종) → 수렴(베스트 선정) → 집중(핵심 컷 반복) 순서로 진행한다.</li>
+      <li>각 인풋이 자기 레인만 달리게 할 것. 역할이 충돌하면 결과물에서 블리딩이 드러난다.</li>
+    </ul>
   </div>
 </div>
 
-<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
-  <div class="modal" id="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">새 항목 추가</div>
-      <button class="modal-close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group" id="section-select-group">
-        <label class="form-label">섹션</label>
-        <select class="form-select" id="f-section"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">제목</label>
-        <input class="form-input" id="f-title" placeholder="예: 스케치 스토리보드 전환 방식">
-      </div>
-      <div class="form-group">
-        <label class="form-label">내용</label>
-        <textarea class="form-textarea" id="f-content" placeholder="발견한 기술, 원칙, 주의사항 등을 자유롭게 작성하세요."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">태그 (쉼표로 구분)</label>
-        <input class="form-input" id="f-tags" placeholder="예: Seedance, 스토리보드, 퀄리티">
-        <div class="form-hint">Cmd+Enter 또는 Ctrl+Enter로 빠르게 저장</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-muted" onclick="closeModal()">취소</button>
-      <button class="btn" onclick="saveEntry()">저장</button>
-    </div>
-  </div>
-</div>
+<!-- ============================
+     CH03
+     ============================ -->
+<div class="chapter" id="ch03">
+  <div class="chapter-header"><div class="chapter-num">03</div><div class="chapter-title">프리프로덕션 — 흐름 탐색과 컨펌</div></div>
+  <div class="chapter-divider"></div>
+  <p>프리프로덕션의 목적은 단 하나다. 컷의 흐름·타이밍·동선을 확정하는 것. 퀄리티·빛·앵커 정확도는 이 단계에서 중요하지 않다. <strong>러프할수록 좋다.</strong></p>
 
-<div class="toast" id="toast"></div>
-
-<script>
-const SECTIONS=[
-  {id:'planning',label:'기획',desc:'전략·방향성·배경·목적',color:'#4A9EFF'},
-  {id:'preproduction',label:'프리프로덕션',desc:'탐색·컨펌·가편집·동선 확정',color:'#FF6A00'},
-  {id:'production',label:'프로덕션',desc:'스토리보드·앵커·영상 생성·편집',color:'#00BB77'},
-  {id:'prompt_rules',label:'프롬프트 룰',desc:'Seedance·GPT 프롬프팅 규칙',color:'#BB77FF'},
-  {id:'workflow',label:'워크플로우',desc:'전체 흐름·판단 기준·실수 방지',color:'#FFB700'},
-];
-
-const SEED={
-  planning:[
-    {title:'이 프로세스가 만들어진 배경',content:`생성형 AI 영상 모델(Seedance 2.0)은 레퍼런스 이미지와 프롬프트를 앵커로 영상을 생성한다.\n\n모델의 재량을 존중할수록 예측 불가능하지만 창의적인 결과가 나온다.\n제어를 높일수록 의도한 연출을 구현할 수 있지만 탐색 범위가 좁아진다.\n\n이 프로세스는 두 가지 균형을 단계별로 조율하는 방식으로 설계되었다.`,tags:['배경','원칙','Seedance'],date:'2026.05.21'},
-    {title:'전체 프로세스 한눈에 보기',content:`[프리프로덕션 1단계] 앵커 검증 및 흐름 탐색\n— 빠른 앵커 + 텍스트로 소사이즈 영상 다수 생성 → 가편집\n— 확정: 타이밍·컷 순서·동선·180도 룰\n— 열림: 앵글·연출 전부\n\n[프리프로덕션 2단계] 컨펌\n— 관계자에게 흐름·동선 컨펌\n— 퀄리티·빛·앵커 정확도는 무시. 흐름만 본다.\n\n[프로덕션 1단계] 앵커 정교화 · 스토리보드 5종\n— 레퍼런스 시트 완성 후 같은 흐름, 다른 연출로 5종 제작\n\n[프로덕션 2단계] 영상 5개 생성 및 편집 조합\n— 샷 단위로 베스트 선정하여 편집 조합\n\n[프로덕션 3단계] 핵심 컷 집중 생성\n— 베스트 스토리보드 반복 생성\n— 핵심 컷은 I2V + 모션 컨트롤로 별도 생성\n\n[프로덕션 4단계] 부분 수정\n— Video Extend / Video Edit으로 특정 구간만 보정\n— 전체 재생성은 최후 수단`,tags:['전체흐름','프로세스','개요'],date:'2026.05.21'},
-  ],
-  preproduction:[
-    {title:'프리프로덕션 1단계 — 앵커 검증 및 흐름 탐색 (A방식)',content:`목적: 컷의 흐름·타이밍·동선을 확정하는 것. 퀄리티·빛·앵커 정확도는 중요하지 않다.\n러프할수록 좋다.\n\n방법:\n— 빠른 앵커와 텍스트 프롬프트만으로 소사이즈 영상을 여러 개 생성\n— 가편집하여 흐름의 가능성을 탐색\n— 빛이 안 맞거나 앵커가 부정확한 것들은 그냥 넘어간다. 흐름만 본다.\n\n이 단계에서 확정할 것:\n✓ 총 몇 컷인가\n✓ 각 컷의 초단위 타이밍\n✓ 컷의 순서와 흐름\n✓ 캐릭터의 공간 동선\n✓ 180도 룰 — 카메라가 어느 방향에서 보는가\n\n이 단계에서 열어둘 것:\n○ 카메라 앵글과 구도\n○ 카메라 무브 방식\n○ 연출의 강도와 스타일\n○ 슬로우모션 여부 및 위치\n\n주의: 가편집이 너무 그럴듯하면 안 된다. 스토리보드 5종에서 나올 수 있는 좋은 연출의 가능성이 잠긴다.`,tags:['프리프로덕션','가편집','A방식','탐색'],date:'2026.05.21'},
-    {title:'프리프로덕션 2단계 — 컨펌',content:`가편집본을 관계자에게 공유하여 흐름·동선·타이밍을 컨펌 받는다.\n\n컨펌 받는 것:\n— 어떤 앵글로 찍느냐가 아니라 무엇을 어떤 순서로 보여주느냐\n— 타이밍, 동선, 컷 순서\n\n주의: "왜 이 앵글이야?"라는 질문이 나오면 프리프로덕션이 덜 된 것.\n앵글은 프로덕션에서 결정한다는 걸 공유해야 한다.`,tags:['프리프로덕션','컨펌','커뮤니케이션'],date:'2026.05.21'},
-    {title:'가편집 타이밍 확정 — 핵심 원칙',content:`가편집에서 각 샷의 초단위 타이밍을 기록하고, 프로덕션 프롬프트에 그대로 명시한다.\n\n이것이 가편집과 실제 영상 사이의 타이밍 드리프트를 줄이는 가장 현실적인 방법이다.\n\n예시:\nShot 01 → 3.0초\nShot 02 → 4.0초\nShot 03 → 3.0초\n\n이 숫자를 Seedance 프롬프트에 그대로 박으면 타이밍 드리프트의 대부분이 잡힌다.\n\n참고: 비디오 레퍼런스로 쓰는 방식은 비추. 저퀄리티 러프 영상의 스타일·조명·모션이 Seedance 앵커로 오염된다.`,tags:['타이밍','드리프트','가편집','원칙'],date:'2026.05.21'},
-    {title:'동선과 180도 룰 — 프리프로덕션에서 반드시 확정',content:`공간 동선과 180도 룰은 스토리보드 5종이 아무리 연출을 다르게 해도 지켜야 할 물리적 뼈대다.\n\n이게 흔들리면 편집에서 컷을 조합할 때 공간이 뒤집히는 문제가 생긴다.\n\n캐릭터가 왼쪽에서 굴러들어왔는데 다음 컷에서 오른쪽을 보고 있으면 공간감이 깨진다.\n이건 연출 스타일의 문제가 아니라 물리적 일관성의 문제다.\n\n→ 프리프로덕션에서 반드시 잠가야 한다.`,tags:['동선','180도룰','물리적일관성','원칙'],date:'2026.05.21'},
-  ],
-  production:[
-    {title:'프로덕션 1단계 — 앵커 정교화 및 스토리보드 5종 제작',content:`캐릭터·배경·무기·의상 레퍼런스 시트를 고퀄리티로 완성한다.\n같은 흐름이지만 연출 느낌만 다른 스토리보드 5종을 제작한다.\n마음에 안 드는 컷이 있으면 앵글·연출 위주로 미세하게 수정하여 5종을 완성한다.\n프리프로덕션에서 확정된 샷 타이밍(초)을 각 스토리보드 프롬프트에 명시한다.\n\n핵심: 스토리보드 5종은 완전히 다른 연출이 아니라 같은 뼈대에서 연출 변수만 달리한 것이다.\n변수 하나씩만 바꿔야 나중에 비교가 명확하다.`,tags:['스토리보드','앵커','5종','프로덕션'],date:'2026.05.21'},
-    {title:'프로덕션 2단계 — 영상 5개 생성 및 컷 편집 조합',content:`스토리보드 5종을 각각 Seedance에 투입하여 영상 5개를 생성한다.\n같은 앵커 베이스에서 나온 영상들이므로 캐릭터·배경 일관성이 유지된다.\n5개 영상에서 샷 단위로 가장 잘 나온 컷을 선정하여 편집으로 조합한다.\n\n영상 선택 판단 기준:\n캐릭터 일관성 > 카메라 무브의 의도 반영 > 모션 자연스러움\n\n퀄리티가 아무리 좋아도 캐릭터 얼굴이 달라보이면 사용 불가.`,tags:['영상생성','편집','컷선정','일관성'],date:'2026.05.21'},
-    {title:'프로덕션 3단계 — 베스트 스토리보드 반복 생성',content:`편집 조합에서 가장 잘 나온 스토리보드를 식별한다.\n같은 스토리보드로 영상을 여러 번 더 생성하여 선택지를 확보한다.\n\n핵심: Seedance는 동일한 인풋에서도 매번 미세하게 다른 결과를 낸다.\n→ 같은 인풋으로 여러 번 돌리는 것만으로 선택지가 늘어난다.`,tags:['반복생성','선택지','베스트'],date:'2026.05.21'},
-    {title:'프로덕션 4단계 — 핵심 컷 I2V + 모션 컨트롤 단독 생성',content:`가장 중요하거나 오래 머무는 핵심 컷은 별도로 집중 생성한다.\n\n순서:\n1. GPT Image 2.0으로 해당 컷의 START FRAME을 고퀄리티 단독 이미지로 생성\n2. 그 이미지를 Seedance I2V에 투입\n3. 모션 컨트롤 기능으로 원하는 카메라 무브를 레이어로 얹는다\n4. 여러 번 돌려서 베스트를 선택\n\nI2V로 처리할 것:\n✓ 캐릭터 얼굴이 크게 잡히는 클로즈업\n✓ 감정적으로 중요한 순간\n✓ 편집에서 오래 머무는 컷\n\nT2V로 충분한 것:\n○ 빠르게 지나가는 동적 컷\n○ 와이드 샷\n○ 배경 위주 컷\n\n핵심: I2V는 시작 프레임을 완전히 고정하므로 캐릭터 일관성이 T2V보다 훨씬 안정적이다.`,tags:['I2V','T2V','핵심컷','모션컨트롤'],date:'2026.05.21'},
-    {title:'프로덕션 5단계 — Video Extend / Edit 부분 수정',content:`잘 나온 영상에서 특정 구간만 아쉬울 때 처음부터 다시 생성하지 않는다.\n\nSeedance의 Video Edit 기능으로 해당 구간만 수정한다.\nVideo Extend 기능으로 클립 길이를 연장할 수 있다.\n\n전략: 전체를 다시 돌리면 다른 샷의 퀄리티가 바뀔 수 있다. 부분 수정이 더 안전하다.`,tags:['VideoEdit','VideoExtend','부분수정'],date:'2026.05.21'},
-    {title:'스케치 스토리보드 전략 — 퀄리티 블리딩 방지',content:`문제: 포토리얼 스토리보드를 넣으면 스토리보드 화질이 영상 퀄리티를 끌어내린다.\n원인: Seedance가 스토리보드를 "비주얼 DNA"로 취급 — 캐릭터·의상·조명·컬러팔레트가 거기서 잠긴다.\n\n해결책: 스토리보드를 실무 스케치 형식으로 만든다.\n\n역할 분리:\n— 스케치 스토리보드 → 구도·카메라·흐름만 담당. 화질 영향 없음\n— 앵커(@img1~4) → 캐릭터·배경·무기·의상 퀄리티 담당\n— 프롬프트 텍스트 → 분위기·재질·조명·퀄리티 언어로 담당\n\n워크플로우:\n앵커 → 리얼리스틱 스토리보드 생성(컨펌용) → 스케치로 변환 → Seedance 투입\n\n스케치 변환 프롬프트:\n"Convert the storyboard panel illustrations to professional hand-drawn sketch style.\nCHANGE ONLY: drawing style → clean black and white pencil sketch.\nKEEP EXACTLY: table layout, all text, shot composition, framing, camera angle, character positioning."`,tags:['스케치','스토리보드','퀄리티블리딩','전략'],date:'2026.05.21'},
-    {title:'해상도 선택 기준 — 720p vs 1080p',content:`테스트 단계: 720p로 진행한다.\n\n이유: 스토리보드 반영률, 캐릭터 일관성, 샷 흐름은 해상도와 무관하게 720p에서도 충분히 판단 가능.\n\n1080p가 필요한 때: 최종 컷 확정하고 퀄리티 뽑을 때.\n\n같은 크레딧으로 720p 3번 돌리는 게 1080p 1번보다 낫다.`,tags:['720p','1080p','해상도','크레딧'],date:'2026.05.21'},
-  ],
-  prompt_rules:[
-    {title:'Seedance 최적화 프롬프트 구조',content:`[스토리보드 지시]\nRefer to @img5 for shot structure, framing, and camera movement only — not for visual quality or style.\n\n[앵커 역할 분리]\nCharacter appearance references @img2, costume references @img4 — maintain exact appearance throughout, no drift.\nEnvironment references @img1. Weapon references @img3.\n\n[모션 지시 — 이미지 재설명 금지]\nSeedance는 이미 이미지를 보고 있다. 프롬프트는 모션만 기술한다.\n"camera slowly orbits around her"가 외모를 다시 설명하는 것보다 훨씬 효과적이다.\n\n[퀄리티 — 텍스트가 담당]\nPhotorealistic. Cinematic 4K.\nDramatic volumetric lighting — [씬에 맞는 조명 기술].\n[재질 기술 — 콘크리트, 금속, 먼지 등]\nAnamorphic lens flare. Film grain.\nFace stable, no distortion, fluid motion.\n\n[일관성 고정]\nConsistent character appearance across all shots.\nNo deformation or drift.\n\n[네거티브]\nNo camera reset between shots. No distortion.\n[씬 특성에 맞는 금지사항]\n\n핵심: 120~280단어 유지. 너무 짧으면 예측 불가, 너무 길면 포커스 분산.`,tags:['Seedance','프롬프트구조','최적화','R2V'],date:'2026.05.21'},
-    {title:'@tag 사용 규칙',content:`플랫폼별 태그 형식:\n— GPT Image 2.0: @img1, @img2, @img3\n— Seedance 2.0: @Image1, @Image2, @Image3\n  (플랫폼마다 다를 수 있으니 확인 필요)\n\n역할 분리 원칙:\n— CHARACTER DESIGN — reference @img2 exactly\n— ENVIRONMENT DESIGN — reference @img1 exactly\n— WEAPON DESIGN — reference @img3 exactly\n— COSTUME — reference @img4 exactly\n— STORYBOARD — reference @img5 for composition only\n\n역할이 겹치면 모델이 혼동하여 하나를 무시한다.\n\n제한 표현 (필수):\n— "maintain exact appearance throughout, no deformation or drift"\n— "Do not alter, simplify, or reinterpret"\n— "Do not substitute or generalize"\n\n레퍼런스 수: 3~4개 한계. 많을수록 품질 저하.`,tags:['@tag','레퍼런스','역할분리','규칙'],date:'2026.05.21'},
-    {title:'조명 디렉션 — 퀄리티에 가장 큰 영향',content:`조명 설명이 모든 프롬프트 요소 중 영상 퀄리티에 가장 큰 영향을 미친다.\n퀄리티를 높이기 위해 프롬프트에 요소를 하나만 추가할 수 있다면, 조명 설명을 추가하라.\n\n전장 씬 예시:\n"Dramatic volumetric lighting — overcast sky, dust-filtered light shafts, fire glow from burning vehicles."\n\n슬로우모션 구간 예시:\n"Muzzle flash white-orange bloom (#FF6A00 core, outer bloom orange), character face lit dramatically by flash."\n\n일반 원칙:\n— 광원을 구체적으로 명시 (태양 방향, 인공광 위치 등)\n— 빛의 색온도 언급 (warm amber, cool overcast, golden hour 등)\n— 그림자와 대비 언급 (deep shadow blacks, high contrast)`,tags:['조명','퀄리티','프롬프트','핵심'],date:'2026.05.21'},
-    {title:'스토리보드 중복 언급 문제 — 판단 기준',content:`문제: 스토리보드에 이미 명시된 내용을 프롬프트에 또 쓰면 토큰 낭비 + 충돌 가능성.\n\n판단:\n— Seedance가 @img5를 잘 읽는다는 전제 → 중복 제거, 짧게\n— 스토리보드 반영률이 낮게 나오면 → 해당 샷 설명 다시 추가\n\nA/B 테스트 방법:\n버전 A: "@img5만 참고" (중복 없음)\n버전 B: "@img5 + 샷별 설명" (중복 있음)\n→ 결과 비교 후 판단\n\n현재까지 발견:\n— 상세 언급 버전: 스토리보드 잘 따라가지만 드라이브가 걸리고 자유도 없음, 퀄리티 애매\n— 미언급 버전: 퀄리티는 나은데 프롬프트를 잘 안 따름\n→ "not for visual quality or style" 분리 표현으로 중간점 찾는 중`,tags:['중복','스토리보드','A/B테스트','판단기준'],date:'2026.05.21'},
-    {title:'GPT Image 2.0 스토리보드 프롬프트 구조',content:`[문서 형식 선언]\nCreate a single landscape storyboard planning sheet image, aspect ratio 3:2, approximately 1536x1024, with a dark navy-black background (#0A0A12) and crisp white text.\n\n[언어 제한]\nAll text in English only.\n\n[헤더]\n"CUT01 (시작-끝)  「장면명」  시퀀스 유형"\n\n[테이블 — 5컬럼 (대사 없으면 6→5)]\nSHOT/TIME / START FRAME / END FRAME / CAMERA/MOVEMENT / ACTION/DIRECTION\n컬럼 비율: 8% / 28% / 28% / 18% / 18%\n"Thin white dividing lines. Exactly [N] shot rows."\n\n[비주얼 스타일]\n스타일 + 부정문 동시 기술 필수.\n색상은 헥스코드로 명시.\n슬로우모션 구간은 Shot N부터 시작임을 명시.\n\n[캐릭터/무기/배경]\n"reference @img1 exactly"\n"maintain exact appearance, Do not alter, simplify, or reinterpret"\n\n[SHOT-BY-SHOT]\n각 샷: Start / End / Camera / Action\n연속 샷 간 시각적 중복 금지.\n슬로우모션 시작 샷에 "SLOW-MO BEGINS" 명시.`,tags:['GPT','스토리보드','프롬프트구조'],date:'2026.05.21'},
-    {title:'네거티브 프롬프트 — 효과적인 표현들',content:`Seedance에서 효과적인 네거티브 표현:\n\n일반:\n— No distortion, no stretching\n— No camera reset between shots\n— No extra fingers\n— No blurry faces\n— No watermarks or text in frame\n— Face stable and not distorted\n— Natural body proportions\n— Movements are fluid and not jerky\n\n씬별:\n— No collapsed ruins — active urban warzone only (전장 씬)\n— No historical drama feel (현대 씬)\n— No generic ruins (도시 배경)\n\n주의: "no blur" 같은 부정문보다 "sharp, in-focus, high clarity" 같은 긍정문이 더 효과적인 경우도 있다.`,tags:['네거티브','프롬프트','표현'],date:'2026.05.21'},
-  ],
-  workflow:[
-    {title:'6가지 제작 방식 스펙트럼 (A~F)',content:`A — 완전 자유 (모델 재량 최대)\n레퍼런스 이미지(@img1~3)와 텍스트 프롬프트만. 스토리보드 없음.\nSeedance가 구도·카메라·흐름을 전부 자율 결정.\n모델 자율성 ★★★★★ / 재현 가능성 ★☆☆☆☆ / 적합: 탐색 초기\n\nB — 앵커 + 카메라 텍스트 제어\n레퍼런스 이미지 + 카메라 지시를 텍스트로 상세히 기술. 스토리보드 없음.\n모델 자율성 ★★★★☆ / 재현 가능성 ★★☆☆☆ / 적합: 빠른 방향성 확인\n\nC — 단일 스토리보드 → 다중 생성\n스토리보드 1개 확정 후 같은 인풋으로 영상을 여러 번 생성. 베스트 선별.\n모델 자율성 ★★★☆☆ / 재현 가능성 ★★★★☆ / 적합: 방향 확정 후 퀄리티 뽑기\n\nD — 베이스 스토리보드 + 미세 변형 5종\n마음에 안 드는 샷 1~2개만 변수를 바꿔 5종 제작. 비교 변수 고정.\n모델 자율성 ★★☆☆☆ / 재현 가능성 ★★★★★ / 적합: 연출 미세 조정\n\nE — 완전히 다른 연출 5종\n같은 씬을 전혀 다른 5가지 연출로 제작. 탐색 범위 최대.\n모델 자율성 ★☆☆☆☆ / 재현 가능성 ★★★☆☆ / 적합: 연출 방향 대규모 탐색\n\nF — 스토리보드 믹스 조합 ⚠ 비추\n여러 스토리보드에서 프레임 합성. 레퍼런스 일관성 붕괴.\n비추천 이유: 서로 다른 배치의 빛·색·캐릭터 렌더링이 달라 Seedance 앵커가 불안정.\n\n권장 조합 순서:\n프리프로덕션 → A방식 (탐색)\n프로덕션 초반 → D방식 (수렴)\n프로덕션 후반 → C방식 (퀄리티 확보)`,tags:['제작방식','A~F','스펙트럼','선택기준'],date:'2026.05.21'},
-    {title:'각 단계별 핵심 원칙',content:`프리프로덕션 전반:\n러프함이 자산이다. 가편집이 완성도가 높으면 탐색 범위가 닫힌다.\n\n타이밍 확정:\n가편집에서 샷 타이밍을 초단위로 기록 → 프로덕션 프롬프트에 그대로 명시.\n이것이 타이밍 드리프트를 줄이는 가장 현실적인 방법이다.\n\n동선과 180도 룰:\n연출이 아무리 달라도 지켜야 할 물리적 뼈대.\n흔들리면 편집에서 공간이 뒤집힌다.\n\n레퍼런스와 프롬프트:\n레퍼런스 = 앵커 (기준점)\n텍스트 프롬프트 = 미세 조정\n둘이 충돌하면 텍스처 번짐, 모션 점프, 색상 드리프트로 드러난다.\n\n스토리보드의 역할:\nSeedance는 스토리보드를 프레임 바이 프레임으로 복사하지 않는다.\n구도·무드·카메라 흐름을 해석하여 자체 퀄리티로 렌더링한다.\n스토리보드 스타일이 영상에 그대로 묻어나지 않는다.\n\nI2V vs T2V:\n핵심 컷 (얼굴 클로즈업, 감정적 장면, 오래 머무는 컷) → I2V\n빠른 동적 컷, 와이드 샷 → T2V`,tags:['핵심원칙','판단기준','전체원칙'],date:'2026.05.21'},
-    {title:'자주 하는 실수와 올바른 판단',content:`✗ 프리프로덕션에서 연출까지 확정함\n✓ 타이밍·동선·컷 순서만 확정. 앵글·연출은 프로덕션에서.\n\n✗ 가편집을 너무 완성도 있게 만듦\n✓ 러프할수록 좋다. 완성도가 높으면 탐색 범위가 줄어든다.\n\n✗ 스토리보드 프레임을 서로 다른 배치에서 섞어 조합 (F방식)\n✓ 각 배치의 빛·색·캐릭터 렌더링이 달라 Seedance 앵커가 불안정해진다.\n\n✗ 레퍼런스를 너무 많이 넣음\n✓ 레퍼런스는 3~4개 한계. 많을수록 품질 저하.\n\n✗ 핵심 컷도 T2V로 처리함\n✓ 얼굴 클로즈업·감정적 컷은 반드시 I2V로 별도 생성.\n\n✗ 아쉬운 구간 때문에 전체를 다시 돌림\n✓ Video Edit으로 해당 구간만 수정. 전체 재생성은 다른 샷 퀄리티를 바꿈.\n\n✗ 연속된 샷 간 시각적 중복\n✓ 이전 샷 끝 장면을 다음 샷 시작으로 반복 금지.\n\n✗ @tag를 자연어로 표현\n✓ 플랫폼별 정확한 @tag 형식 사용.`,tags:['실수','판단기준','체크리스트'],date:'2026.05.21'},
-  ]
-};
-
-let cur=null;
-
-function getKey(id){return 'aivkb_'+id;}
-function load(id){try{const r=localStorage.getItem(getKey(id));return r?JSON.parse(r):[];}catch(e){return[];}}
-function save(id,arr){try{localStorage.setItem(getKey(id),JSON.stringify(arr));}catch(e){}}
-
-function seedAll(){
-  for(const s of SECTIONS){
-    const ex=load(s.id);
-    if(ex.length===0&&SEED[s.id]){
-      const entries=SEED[s.id].map((e,i)=>({...e,id:Date.now()+i}));
-      save(s.id,entries);
-    }
-  }
-}
-
-function totalCount(){return SECTIONS.reduce((a,s)=>a+load(s.id).length,0);}
-
-function renderNav(){
-  const sel=document.getElementById('f-section');
-  sel.innerHTML=SECTIONS.map(s=>`<option value="${s.id}"${cur&&cur.id===s.id?' selected':''}>${s.label}</option>`).join('');
-  document.getElementById('nav').innerHTML=SECTIONS.map(s=>{
-    const count=load(s.id).length;
-    const active=cur&&cur.id===s.id?' active':'';
-    return `<div class="nav-item${active}" onclick="selectSection('${s.id}')" style="${active?'--c:'+s.color:''}">
-      <span class="nav-label">${s.label}</span>
-      <span class="nav-count" style="${active?'background:'+s.color:''}">${count}</span>
-    </div>`;
-  }).join('');
-}
-
-function selectSection(id){
-  cur=SECTIONS.find(s=>s.id===id);
-  document.getElementById('main-title').textContent=cur.label;
-  document.getElementById('main-desc').textContent=cur.desc;
-  document.getElementById('add-btn').style.display='block';
-  document.getElementById('add-btn').style.borderColor=cur.color;
-  document.getElementById('add-btn').style.color=cur.color;
-  renderNav();
-  renderEntries();
-}
-
-function renderEntries(){
-  const el=document.getElementById('entries');
-  const entries=load(cur.id);
-  const cs=document.getElementById('count-summary');
-  if(entries.length>0){
-    cs.style.display='flex';
-    cs.innerHTML=`<div class="count-item"><span>${entries.length}</span>개 항목</div><div class="count-item"><span>${cur.label}</span></div>`;
-  } else {
-    cs.style.display='none';
-  }
-  if(!entries.length){
-    el.innerHTML=`<div class="empty"><div class="empty-icon">◈</div><p>아직 항목이 없어요.<br>새로 발견한 기술이나 원칙을 추가해보세요.</p></div>`;
-    return;
-  }
-  const color=cur.color;
-  el.innerHTML=[...entries].reverse().map((e,ri)=>{
-    const i=entries.length-1-ri;
-    const tags=e.tags?e.tags.map(t=>`<span class="tag">${t}</span>`).join(''):'';
-    return `<div class="entry" style="border-left-color:${color}">
-      <div class="entry-header">
-        <div class="entry-title">${e.title}</div>
-        <div class="entry-meta">${e.date}</div>
-      </div>
-      <div class="entry-content">${e.content}</div>
-      <div class="entry-footer">
-        <div class="entry-tags">${tags}</div>
-        <div class="entry-actions">
-          <button class="btn btn-sm btn-danger" onclick="deleteEntry(${i})">삭제</button>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">빠른 앵커 + 720p 영상 생성 → 가편집</div>
+      <div class="step-desc">대략적인 앵커와 텍스트 프롬프트로 720p 영상을 여러 개 생성한다. 엉망진창인 영상에서 가편집을 통해 타이밍, 동선, 컷 순서, 연출 방향에 대한 감을 잡는다. 빛이 안 맞거나 앵커가 부정확한 것은 그냥 넘어간다. 흐름만 본다.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px;">
+        <div class="list-box lock">
+          <div class="list-label">확정할 것</div>
+          <ul>
+            <li>총 몇 컷인가</li>
+            <li>각 컷의 초단위 타이밍</li>
+            <li>컷의 순서와 흐름</li>
+            <li>캐릭터의 공간 동선</li>
+            <li>180도 룰 (카메라 방향)</li>
+          </ul>
+        </div>
+        <div class="list-box neutral">
+          <div class="list-label">대략 정해지는 것</div>
+          <ul>
+            <li>샷의 대략적인 앵글 방향성</li>
+            <li>(와이드/미디엄/클로즈업)</li>
+            <li>슬로우모션 구간 위치</li>
+          </ul>
+        </div>
+        <div class="list-box open">
+          <div class="list-label">열어둘 것</div>
+          <ul>
+            <li>세부 카메라 레이아웃</li>
+            <li>정확한 카메라 무브</li>
+            <li>연출의 강도와 스타일</li>
+          </ul>
         </div>
       </div>
-    </div>`;
-  }).join('');
-}
+      <div class="note">가편집이 너무 그럴듯하면 안 된다. 컨펌하는 사람들이 그걸 기준으로 고정해버리면 이후 스토리보드에서 나올 수 있는 좋은 연출의 가능성이 잠긴다.</div>
+    </div>
+  </div>
 
-function openModal(){
-  document.getElementById('f-title').value='';
-  document.getElementById('f-content').value='';
-  document.getElementById('f-tags').value='';
-  document.getElementById('section-select-group').style.display='block';
-  if(cur) document.getElementById('f-section').value=cur.id;
-  document.getElementById('overlay').classList.add('show');
-  setTimeout(()=>document.getElementById('f-title').focus(),200);
-}
+  <div class="section-label">프리프로덕션 프롬프트</div>
+  <div class="prompt-block">
+    <div class="prompt-header">
+      <span class="prompt-tag">PROMPT</span>
+      <span class="prompt-title">탐색 영상 생성 — 스토리보드 없는 포멀 프롬프트</span>
+      <span class="prompt-tool">Seedance 2.0 · 720p</span>
+    </div>
+    <div class="prompt-section en">
+      <div class="prompt-lang-label">EN</div>
+      <pre>Character appearance references @img2 — maintain exact appearance
+throughout, no deformation or drift.
+Props and weapon reference @img3. Costume references @img4.
+Environment references @img1.
 
-function closeModal(){document.getElementById('overlay').classList.remove('show');}
-function handleOverlayClick(e){if(e.target.id==='overlay')closeModal();}
+Shot 01 (0:00–0:03): [rough angle direction] [action]
+Shot 02 (0:03–0:07): [rough angle direction] [action]
+Shot 03 (0:07–0:10): [rough angle direction] [action]
 
-function saveEntry(){
-  const sectionId=document.getElementById('f-section').value;
-  const title=document.getElementById('f-title').value.trim();
-  const content=document.getElementById('f-content').value.trim();
-  const tagsRaw=document.getElementById('f-tags').value.trim();
-  if(!title||!content){showToast('제목과 내용을 입력해주세요','#FF4444');return;}
-  const tags=tagsRaw?tagsRaw.split(',').map(t=>t.trim()).filter(Boolean):[];
-  const now=new Date();
-  const date=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-  const entries=load(sectionId);
-  entries.push({id:Date.now(),title,content,tags,date});
-  save(sectionId,entries);
-  closeModal();
-  showToast('저장되었습니다');
-  if(cur&&cur.id===sectionId){renderEntries();}
-  renderNav();
-}
+Photorealistic. Cinematic.
+[Scene-specific lighting description].
+Anamorphic lens. Film grain.
+Face stable, no distortion, fluid motion.
+Consistent character throughout. No camera reset between shots.</pre>
+    </div>
+    <div class="prompt-section ko">
+      <div class="prompt-lang-label">KO — 한글 해석</div>
+      <p>캐릭터 외모는 @img2를 참고한다. 전체에 걸쳐 정확한 외모를 유지하며 변형·드리프트 없음.<br>
+      프랍과 무기는 @img3, 의상은 @img4를 참고한다.<br>
+      배경은 @img1을 참고한다.<br><br>
+      Shot 01 (0:00–0:03): [대략적 앵글 방향] [액션]<br>
+      Shot 02 (0:03–0:07): [대략적 앵글 방향] [액션]<br>
+      Shot 03 (0:07–0:10): [대략적 앵글 방향] [액션]<br><br>
+      포토리얼리스틱. 시네마틱.<br>
+      [씬에 맞는 조명 설명]<br>
+      아나모픽 렌즈. 필름 그레인.<br>
+      얼굴 안정적, 변형 없음, 유연한 모션.<br>
+      전체에 걸쳐 캐릭터 일관성 유지. 샷 간 카메라 리셋 없음.</p>
+    </div>
+  </div>
 
-function deleteEntry(index){
-  if(!confirm('이 항목을 삭제할까요?'))return;
-  const entries=load(cur.id);
-  entries.splice(index,1);
-  save(cur.id,entries);
-  showToast('삭제되었습니다','#FF6A00');
-  renderEntries();
-  renderNav();
-}
+  <div class="step" style="margin-top:24px;">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">컨펌</div>
+      <div class="step-desc">가편집본을 관계자 또는 팀에게 공유하여 흐름·동선·타이밍을 컨펌 받는다. 이 단계에서 컨펌 받는 것은 어떤 앵글로 찍느냐가 아니라 무엇을 어떤 순서로 보여주느냐이다.</div>
+      <div class="note">컨펌 단계에서 "왜 이 앵글이야?"라는 질문이 나오면 아직 프리프로덕션이 덜 된 것이다. 세부 앵글은 프로덕션에서 결정한다는 것을 공유해야 한다.</div>
+    </div>
+  </div>
+</div>
 
-function showToast(msg,color='#00BB77'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.style.background=color;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
+<!-- ============================
+     CH04
+     ============================ -->
+<div class="chapter" id="ch04">
+  <div class="chapter-header"><div class="chapter-num">04</div><div class="chapter-title">프로덕션 — 본격 제작</div></div>
+  <div class="chapter-divider"></div>
+  <p>프리프로덕션에서 확정된 타이밍·동선을 기반으로 본격 영상을 생성한다. <strong>탐색 → 수렴 → 집중</strong>의 순서로 진행하며, 단계를 거칠수록 생성 범위를 좁혀간다.</p>
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeModal();
-  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('overlay').classList.contains('show'))saveEntry();
-});
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">앵커 정교화</div>
+      <div class="step-desc">컨펌된 공간의 라이팅, 인물의 상태(더스트, 찢어진 옷, 땀 등 씬에 맞는 디테일)를 반영하여 앵커를 고도화한다. 캐릭터·배경·프랍 레퍼런스 시트를 고퀄리티로 완성한다.</div>
+      <div class="note">앵커 정교화 단계에서 씬의 물리적 상태를 반영할수록 최종 영상의 일관성이 높아진다. 깨끗한 앵커에서 먼지 묻은 영상을 만들면 캐릭터 드리프트가 생긴다.</div>
+    </div>
+  </div>
 
-seedAll();
-renderNav();
-selectSection('planning');
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">스토리보드 제작 — 실사 생성 → 키컷 선정 → 퀄리티 앵커 확정 → 스케치 변환</div>
+      <div class="step-desc">같은 흐름이지만 연출 느낌만 다른 실사 스토리보드를 GPT Image 2.0으로 생성한다. 생성된 스토리보드에서 키컷을 선정하고, 3×3 그리드로 변형하여 퀄리티 앵커를 확정한다. 퀄리티 앵커를 컨펌 받아 분위기를 확정한 후, 스토리보드를 스케치 형식으로 변환한다.</div>
+      <div class="note">스케치 스토리보드를 쓰는 이유: 포토리얼 스토리보드는 화질이 Seedance의 비주얼 DNA로 잠겨 영상 퀄리티를 끌어내린다. 스케치는 구도·흐름만 전달하고 퀄리티에는 영향을 주지 않는다. 퀄리티는 앵커와 텍스트 프롬프트가 담당한다.</div>
+    </div>
+  </div>
+
+  <div class="section-label">스토리보드 관련 프롬프트</div>
+
+  <div class="prompt-block">
+    <div class="prompt-header">
+      <span class="prompt-tag">PROMPT</span>
+      <span class="prompt-title">실사 스토리보드 생성</span>
+      <span class="prompt-tool">GPT Image 2.0</span>
+    </div>
+    <div class="prompt-section en">
+      <div class="prompt-lang-label">EN</div>
+      <pre>Create a single landscape storyboard planning sheet image, aspect ratio 3:2,
+approximately 1536x1024, with a dark navy-black background (#0A0A12) and crisp
+white text. Professional live-action cinematic storyboard planning document.
+All text in English only.
+
+HEADER:
+"CUT01 (0:00-0:10)  「[Scene Name]」  [Sequence Type]"
+
+TABLE LAYOUT — STRICT 5 COLUMNS:
+Column widths: 8% / 28% / 28% / 18% / 18%
+1) SHOT / TIME  2) START FRAME  3) END FRAME  4) CAMERA / MOVEMENT  5) ACTION / DIRECTION
+Thin white dividing lines. Exactly [N] shot rows.
+
+VISUAL STYLE — HYPER-REALISTIC CINEMATIC:
+[Scene aesthetic and color palette]
+Film grain. Anamorphic lens. Slow-motion begins from Shot [N].
+
+CHARACTER — reference @img2 exactly. Do not alter, simplify, or reinterpret.
+PROPS / WEAPON — reference @img3 exactly.
+ENVIRONMENT — reference @img1 exactly.
+COSTUME — reference @img4 exactly.
+
+SHOT-BY-SHOT ([N] rows):
+Shot 01 | 0:00–0:0X
+  Start: [description]  End: [description]
+  Camera: [lens, angle, movement]  Action: [what happens]</pre>
+    </div>
+    <div class="prompt-section ko">
+      <div class="prompt-lang-label">KO — 한글 해석</div>
+      <p>가로형 스토리보드 계획 시트. 비율 3:2, 약 1536x1024. 다크 네이비-블랙 배경(#0A0A12), 선명한 흰색 텍스트. 전문 실사 시네마틱 스토리보드 문서 스타일. 텍스트는 영어만.<br><br>
+      헤더: "CUT01 (0:00-0:10) 「장면명」 시퀀스 유형"<br><br>
+      테이블 — 5컬럼: 샷/시간 / 시작프레임 / 끝프레임 / 카메라·무브 / 액션·연출. 얇은 흰 구분선. N개 샷 행.<br><br>
+      비주얼 스타일: 하이퍼리얼 시네마틱. [씬 분위기·색상]. 필름 그레인. 아나모픽 렌즈. Shot N부터 슬로우모션.<br><br>
+      캐릭터(@img2), 프랍/무기(@img3), 배경(@img1), 의상(@img4)을 정확히 참고. 임의 변형 금지.<br><br>
+      샷별: 시작 / 끝 / 카메라 / 액션</p>
+    </div>
+  </div>
+
+  <div class="prompt-block">
+    <div class="prompt-header">
+      <span class="prompt-tag">PROMPT</span>
+      <span class="prompt-title">스케치 스토리보드 변환</span>
+      <span class="prompt-tool">GPT Image 2.0</span>
+    </div>
+    <div class="prompt-section en">
+      <div class="prompt-lang-label">EN</div>
+      <pre>Convert the storyboard panel illustrations in this image
+to a professional hand-drawn sketch style.
+
+CHANGE ONLY:
+- Drawing style → clean black and white pencil sketch,
+  professional storyboard artist style,
+  clear line weight variation, minimal shading
+
+KEEP EXACTLY AS-IS:
+- Table layout, grid structure, all text and labels
+- Shot composition, framing, and camera angle of each panel
+- Character positioning and pose within each frame
+- All proportions and spatial relationships
+
+Do not alter, redraw, or reinterpret the composition.
+Only the rendering style changes from photorealistic to sketch.</pre>
+    </div>
+    <div class="prompt-section ko">
+      <div class="prompt-lang-label">KO — 한글 해석</div>
+      <p>이 이미지의 스토리보드 패널 일러스트를 전문적인 손으로 그린 스케치 스타일로 변환한다.<br><br>
+      변경할 것: 드로잉 스타일 → 깔끔한 흑백 연필 스케치, 전문 스토리보드 아티스트 스타일, 명확한 선 굵기 변화, 최소한의 음영<br><br>
+      그대로 유지할 것: 테이블 레이아웃·그리드·모든 텍스트와 라벨 / 각 패널의 샷 구도·프레이밍·카메라 앵글 / 프레임 내 캐릭터 포지션과 포즈 / 모든 비율과 공간적 관계<br><br>
+      구도를 변경하거나 다시 그리거나 재해석하지 말 것. 렌더링 스타일만 변환한다.</p>
+    </div>
+  </div>
+
+  <div class="prompt-block">
+    <div class="prompt-header">
+      <span class="prompt-tag">PROMPT</span>
+      <span class="prompt-title">퀄리티 앵커 제작 (키컷 업스케일 및 인핸스)</span>
+      <span class="prompt-tool">GPT Image 2.0 / Magnific</span>
+    </div>
+    <div class="prompt-section en">
+      <div class="prompt-lang-label">EN</div>
+      <pre>Upscale @img1 to 4K quality with extreme improvements
+in material texture and lighting.
+Analyze and reflect the character appearance from @img2,
+the spatial atmosphere from @img3, and the prop/weapon design from @img4.
+
+Character face: @img2 face takes highest priority.
+Match eye shape, nose form, jawline, and hairstyle exactly to @img2.
+Ignore the face in @img1 — replace entirely with @img2 face.
+No facial deformation, no drift.
+
+Lighting: Dramatic volumetric light — shafts cutting through dust and smoke.
+Orange fire glow from burning vehicles lighting the character's side.
+Strong backlight burning the character's outline.
+Extreme contrast — shadows pure black, highlights oversaturated.
+
+Atmosphere: Thick warzone air — gunpowder smoke, concrete dust, steam in layers.
+Rainwater pooled on asphalt reflecting fire and sky.
+
+Material: Concrete — bullet holes, cracks, moisture in 4K detail.
+Metal — fingerprints, oil, micro-scratches photorealistic.
+Fabric — sweat, dust, creases from movement.
+
+Lens: Anamorphic lens flare. Extremely shallow DOF.
+Film grain and chromatic aberration.</pre>
+    </div>
+    <div class="prompt-section ko">
+      <div class="prompt-lang-label">KO — 한글 해석</div>
+      <p>@img1을 재질과 라이팅을 극도로 개선하여 4K 화질로 업스케일한다. @img2의 캐릭터 생김새, @img3의 공간 분위기, @img4의 프랍/무기 디자인을 분석하여 반영한다.<br><br>
+      캐릭터 얼굴: @img2 얼굴을 최우선 반영. 눈 모양, 코 형태, 턱선, 헤어스타일을 @img2와 동일하게. @img1 얼굴은 무시하고 @img2 얼굴로 완전히 교체. 변형 없음.<br><br>
+      라이팅: 극적인 부피감 있는 빛. 불타는 차량의 주황빛 화재 반사광. 역광으로 캐릭터 윤곽선을 태우는 강렬한 배경광. 극단적 명암 대비.<br><br>
+      분위기: 화약 연기, 콘크리트 먼지, 수증기 레이어. 빗물 고인 아스팔트에 화염 반사.<br><br>
+      재질: 콘크리트 탄흔·균열·습기 4K 선명. 금속 지문·기름·긁힘 포토리얼. 의상 땀·먼지·구김.<br><br>
+      렌즈: 아나모픽 렌즈 플레어. 극단적으로 얕은 심도. 필름 그레인과 크로마틱 어베레이션.</p>
+    </div>
+  </div>
+
+  <div class="prompt-tbd">추가 예정 — 3×3 그리드 키컷 변형 프롬프트: 키컷을 베이스로 앵글·연출을 살짝씩 다르게 9가지 변형을 생성하는 프롬프트 (GPT Image 2.0)</div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">영상 6종 생성</div>
+      <div class="step-desc">스케치 스토리보드 기반 5종 + 스토리보드 없이 텍스트 프롬프트만으로 생성한 1종, 총 6종의 영상을 생성한다. 6개 영상에서 샷 단위로 가장 잘 나온 컷을 선정하여 편집으로 조합한다.</div>
+      <div class="note">판단 기준: 캐릭터 일관성 &gt; 카메라 무브의 의도 반영 &gt; 모션 자연스러움. 멀티컷 기본 구조: 3초 × 3컷 = 10초, 와이드 → 미디엄 → 클로즈 순서가 가장 안정적.</div>
+    </div>
+  </div>
+
+  <div class="section-label">Seedance 메인 프롬프트</div>
+  <div class="prompt-block">
+    <div class="prompt-header">
+      <span class="prompt-tag">PROMPT</span>
+      <span class="prompt-title">Seedance 메인 프롬프트 (6앵커 구조)</span>
+      <span class="prompt-tool">Seedance 2.0 · T2V</span>
+    </div>
+    <div class="prompt-section en">
+      <div class="prompt-lang-label">EN</div>
+      <pre>Refer to @img5 for shot structure, framing, and camera movement only —
+not for visual quality or style. Generate photorealistic cinematic video.
+
+Primary identity anchor: @img2 for character face and appearance.
+Do not alter facial proportions, eye shape, or hairstyle.
+Costume references @img4. Maintain exact appearance throughout,
+no deformation or drift.
+Environment references @img1. Props and weapon reference @img3.
+
+Secondary quality anchor: @img6 for visual quality standard,
+lighting contrast, color grading, material texture, and cinematic mood only.
+Do NOT extract pose, action, or composition from @img6.
+All motion and framing follow @img5 storyboard only.
+
+Shot 01 (0:00–0:03): [motion description only]
+Shot 02 (0:03–0:07): [motion description only]
+Shot 03 (0:07–0:10): SLOW-MO. [motion description only]
+
+Match the photorealistic quality, cinematic lighting, and material texture
+standard shown in @img6 throughout all shots.
+Dramatic volumetric lighting — [scene-specific description].
+Anamorphic lens. Film grain.
+Face stable, no distortion, fluid motion throughout.
+Consistent character appearance across all shots.
+No camera reset between shots. No distortion.</pre>
+    </div>
+    <div class="prompt-section ko">
+      <div class="prompt-lang-label">KO — 한글 해석</div>
+      <p>@img5를 샷 구조·프레이밍·카메라 무브먼트 참고용으로만 사용. 비주얼 퀄리티나 스타일은 참고하지 않음. 포토리얼리스틱 시네마틱 영상 생성.<br><br>
+      프라이머리 아이덴티티 앵커: @img2 — 캐릭터 얼굴과 외모. 얼굴 비율·눈 모양·헤어스타일 변경 금지. 의상은 @img4. 전체 외모 유지, 변형·드리프트 없음. 배경은 @img1. 프랍과 무기는 @img3.<br><br>
+      세컨더리 퀄리티 앵커: @img6 — 비주얼 퀄리티 기준·조명 대비·색 보정·재질 텍스처·시네마틱 무드만 참고. 포즈·액션·구도 추출 금지. 모든 모션과 프레이밍은 @img5만 따름.<br><br>
+      Shot 01–03: [모션 지시만 기재 — 비주얼 외모 재설명 금지]<br><br>
+      @img6의 포토리얼리스틱 퀄리티·조명·재질 기준을 전체 샷에 유지. 드라마틱 부피감 있는 조명. 아나모픽 렌즈. 필름 그레인. 얼굴 안정적·변형 없음·유연한 모션. 전체 캐릭터 일관성. 샷 간 카메라 리셋 없음. 변형 없음.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">편집 조합</div>
+      <div class="step-desc">6개 영상에서 샷 단위로 베스트를 선정하여 편집으로 조합한다. 이 과정에서 어떤 스토리보드가 가장 좋은 결과를 냈는지 파악한다.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">베스트 스토리보드 반복 생성</div>
+      <div class="step-desc">편집 조합에서 가장 잘 나온 스토리보드를 식별한다. 같은 스토리보드로 영상을 여러 번 더 생성하여 선택지를 확보한다. Seedance는 동일한 인풋에서도 매번 미세하게 다른 결과를 낸다.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-title">핵심 컷 I2V 단독 생성</div>
+      <div class="step-desc">가장 중요하거나 오래 머무는 핵심 컷은 별도로 집중 생성한다. 주로 대사가 있는 클로즈업 컷, 주요 텍스트가 등장하는 컷이 해당된다.</div>
+      <div class="lists-row">
+        <div class="list-box lock">
+          <div class="list-label">1차 시도</div>
+          <ul>
+            <li>퀄리티 앵커 또는 인페인트로 개선한 이미지를 START FRAME으로 투입</li>
+            <li>텍스트 프롬프트만으로 원하는 모션 유도</li>
+            <li>여러 번 돌려서 베스트 선택</li>
+          </ul>
+        </div>
+        <div class="list-box open">
+          <div class="list-label">2차 시도 (1차 실패 시만)</div>
+          <ul>
+            <li>모션 컨트롤 기능 추가</li>
+            <li>원하는 카메라 무브를 레이어로 지정</li>
+            <li>START FRAME과 모션 컨트롤은 별도 기능</li>
+          </ul>
+        </div>
+      </div>
+      <div class="lists-row">
+        <div class="list-box lock">
+          <div class="list-label">I2V로 처리할 것</div>
+          <ul>
+            <li>캐릭터 얼굴 클로즈업</li>
+            <li>대사가 있는 감정적 장면</li>
+            <li>주요 텍스트 등장 컷</li>
+            <li>편집에서 오래 머무는 컷</li>
+          </ul>
+        </div>
+        <div class="list-box open">
+          <div class="list-label">T2V로 충분한 것</div>
+          <ul>
+            <li>빠르게 지나가는 동적 컷</li>
+            <li>와이드 샷</li>
+            <li>배경 위주 컷</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note">I2V는 시작 프레임을 완전히 고정하므로 캐릭터 일관성이 T2V보다 훨씬 안정적이다. 모션 컨트롤은 텍스트 프롬프팅만으로 원하는 모션이 죽어도 안 나올 경우에만 추가한다.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-title">Video Extend / Edit으로 부분 수정</div>
+      <div class="step-desc">잘 나온 영상에서 특정 구간만 아쉬울 때 처음부터 다시 생성하지 않는다. Seedance의 Video Edit 기능으로 해당 구간만 수정하고, Video Extend로 클립 길이를 연장한다.</div>
+      <div class="note">전체를 다시 돌리면 다른 샷의 퀄리티가 바뀔 수 있다. 부분 수정이 더 안전하다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     CH05
+     ============================ -->
+<div class="chapter" id="ch05">
+  <div class="chapter-header"><div class="chapter-num">05</div><div class="chapter-title">포스트 프로덕션</div></div>
+  <div class="chapter-divider"></div>
+  <p>영상 생성이 완료된 이후 최종 퀄리티를 끌어올리는 단계다. 사운드 마스터링, 업스케일, 색 보정이 포함된다.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">업스케일</div>
+      <div class="step-desc">생성된 영상의 해상도와 디테일을 향상시킨다. 720p로 테스트한 영상을 최종 납품 해상도로 업스케일한다.</div>
+      <div class="info-box gray" style="margin-top:10px;"><div class="info-box-title">업스케일 도구</div><ul><li>Topaz Video AI — Artemis / Proteus 모드</li><li>Magnific — 스틸 프레임 이미지 업스케일</li><li>권장 출력: 1080p (기본) / 4K (최종 납품)</li></ul></div>
+      <div class="prompt-tbd">추가 예정 — Topaz 모드별 설정 및 비교 노하우</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">사운드 마스터링</div>
+      <div class="step-desc">영상에 맞는 사운드를 제작하고 믹싱한다. AI 음악 생성 툴과 효과음을 조합하여 최종 사운드트랙을 완성한다.</div>
+      <div class="info-box gray" style="margin-top:10px;"><div class="info-box-title">사운드 제작 도구</div><ul><li>Suno — AI 음악 생성</li><li>Udio — 고퀄리티 AI 음악 대안</li><li>ElevenLabs — 대사·내레이션 음성 생성</li><li>Descript — 영상·오디오 편집 통합</li></ul></div>
+      <div class="prompt-tbd">추가 예정 — Suno 프롬프팅 노하우, SFX 매핑 방법, 믹싱 레벨 기준</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">색 보정 및 최종 출력</div>
+      <div class="step-desc">생성된 영상의 색온도, 대비, 채도를 최종 조정한다. 플랫폼별 스펙에 맞춰 출력한다.</div>
+      <div class="prompt-tbd">추가 예정 — 색 보정 노하우 및 플랫폼별 출력 스펙</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     CH06
+     ============================ -->
+<div class="chapter" id="ch06">
+  <div class="chapter-header"><div class="chapter-num">06</div><div class="chapter-title">6가지 제작 방식 스펙트럼</div></div>
+  <div class="chapter-divider"></div>
+  <p>모델의 자율성과 제작자의 제어도 사이에서 선택할 수 있는 6가지 방식이 있다. 상황에 따라 적절히 선택하거나 조합한다.</p>
+  <table>
+    <thead><tr><th style="width:36px;">방식</th><th style="width:120px;">명칭</th><th>설명</th><th style="width:66px;">모델 자율성</th><th style="width:66px;">재현 가능성</th><th style="width:66px;">적합한 상황</th></tr></thead>
+    <tbody>
+      <tr><td class="td-method">A</td><td><strong>완전 자유</strong><br>모델 재량 최대</td><td>레퍼런스 이미지와 텍스트 프롬프트만. 스토리보드 없음. Seedance가 구도·카메라·흐름을 전부 자율 결정. 프리프로덕션 탐색 단계에서 사용.</td><td class="td-stars">★★★★★</td><td class="td-stars">★☆☆☆☆</td><td>탐색 초기<br>프리프로덕션</td></tr>
+      <tr><td class="td-method">B</td><td><strong>앵커 + 카메라<br>텍스트 제어</strong></td><td>레퍼런스 이미지 + 카메라 지시를 텍스트로 상세히 기술. 스토리보드 없이 언어로만 제어. 6종 생성 중 1종이 이 방식.</td><td class="td-stars">★★★★☆</td><td class="td-stars">★★☆☆☆</td><td>빠른 방향성<br>확인</td></tr>
+      <tr><td class="td-method">C</td><td><strong>단일 스토리보드<br>→ 다중 생성</strong></td><td>스토리보드 1개를 확정하고 같은 인풋으로 영상을 여러 번 생성. 매 생성마다 결과가 미세하게 달라지므로 베스트를 선별.</td><td class="td-stars">★★★☆☆</td><td class="td-stars">★★★★☆</td><td>방향 확정 후<br>퀄리티 뽑기</td></tr>
+      <tr><td class="td-method">D</td><td><strong>베이스 스토리보드<br>+ 미세 변형 5종</strong></td><td>마음에 안 드는 샷 1~2개만 변수를 바꿔 5종의 변형 스토리보드를 만든다. 비교 변수가 하나로 고정되어 결과 분석이 명확하다.</td><td class="td-stars">★★☆☆☆</td><td class="td-stars">★★★★★</td><td>연출<br>미세 조정</td></tr>
+      <tr><td class="td-method">E</td><td><strong>완전히 다른<br>연출 5종</strong></td><td>같은 씬을 전혀 다른 5가지 연출로 스토리보드 제작 후 각각 영상 생성. 탐색 범위가 가장 넓지만 비용·시간이 많이 든다.</td><td class="td-stars">★☆☆☆☆</td><td class="td-stars">★★★☆☆</td><td>연출 방향<br>대규모 탐색</td></tr>
+      <tr><td class="td-method" style="color:#AA0000;">F</td><td><strong>스토리보드<br>믹스 조합</strong><br><span style="color:#AA0000;font-size:11px;">⚠ 비추</span></td><td>여러 스토리보드에서 프레임을 골라 합성. 서로 다른 생성 배치의 프레임이 섞여 레퍼런스 일관성이 깨진다.</td><td class="td-stars">★★☆☆☆</td><td class="td-stars">★☆☆☆☆</td><td>사용 비추</td></tr>
+    </tbody>
+  </table>
+  <div class="info-box blue">
+    <div class="info-box-title">권장 조합 순서</div>
+    <ul>
+      <li>프리프로덕션: A방식 → 앵커 검증 및 흐름 파악</li>
+      <li>프로덕션 초반: D방식 5종 + B방식 1종 → 총 6종</li>
+      <li>프로덕션 후반: C방식 → 베스트 스토리보드 반복 생성</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================
+     CH07
+     ============================ -->
+<div class="chapter" id="ch07">
+  <div class="chapter-header"><div class="chapter-num">07</div><div class="chapter-title">핵심 원칙</div></div>
+  <div class="chapter-divider"></div>
+  <div class="principle"><div class="principle-label">프리프로덕션 전반</div><div class="principle-body">러프함이 자산이다. 가편집이 너무 완성도가 높으면 관계자들이 그것을 기준으로 고정해버린다. 그러면 프로덕션에서 나올 수 있는 예측 불가능한 좋은 연출의 가능성이 닫힌다.</div></div>
+  <div class="principle"><div class="principle-label">타이밍 확정</div><div class="principle-body">가편집에서 각 샷의 초단위 타이밍을 기록하고, 프로덕션 프롬프트에 그대로 명시한다. 이것이 가편집과 실제 영상 사이의 타이밍 드리프트를 줄이는 가장 현실적인 방법이다.</div></div>
+  <div class="principle"><div class="principle-label">동선과 180도 룰</div><div class="principle-body">공간 동선과 180도 룰은 스토리보드가 아무리 연출을 다르게 해도 지켜야 할 물리적 뼈대다. 이게 흔들리면 편집에서 컷을 조합할 때 공간이 뒤집히는 문제가 생긴다.</div></div>
+  <div class="principle"><div class="principle-label">역할 분리 원칙</div><div class="principle-body">각 인풋이 자기 레인만 달리게 할 것. 레퍼런스와 텍스트 프롬프트가 충돌하면 영상에서 텍스처 번짐, 모션 점프, 색상 드리프트로 드러난다.</div></div>
+  <div class="principle"><div class="principle-label">스케치 스토리보드</div><div class="principle-body">Seedance는 스토리보드를 프레임 바이 프레임으로 복사하지 않는다. 구도·무드·카메라 흐름을 해석하여 자체 퀄리티로 렌더링한다. 포토리얼 스토리보드의 화질 블리딩을 막으려면 스케치로 변환해야 한다.</div></div>
+  <div class="principle"><div class="principle-label">모션을 기술하라</div><div class="principle-body">Seedance는 이미지를 보고 있다. 텍스트 프롬프트 토큰은 모션 지시에 써야 한다. 외모를 다시 설명하는 건 토큰 낭비이자 충돌 원인이다.</div></div>
+  <div class="principle"><div class="principle-label">I2V vs T2V</div><div class="principle-body">캐릭터 얼굴이 크게 잡히거나 오래 머무는 핵심 컷은 I2V. 빠르게 지나가는 동적 컷이나 와이드 샷은 T2V로 충분하다. 모션 컨트롤은 텍스트 프롬프팅으로 해결이 안 될 때만 사용한다.</div></div>
+  <div class="principle"><div class="principle-label">해상도 전략</div><div class="principle-body">테스트는 720p. 같은 크레딧으로 720p 3번 돌리는 게 1080p 1번보다 낫다. 최종 퀄리티 확정 후 1080p+ 사용.</div></div>
+</div>
+
+<!-- ============================
+     CH08
+     ============================ -->
+<div class="chapter" id="ch08">
+  <div class="chapter-header"><div class="chapter-num">08</div><div class="chapter-title">자주 하는 실수와 판단 기준</div></div>
+  <div class="chapter-divider"></div>
+  <div class="mistakes-wrap">
+    <div class="mistake-header"><div>자주 하는 실수</div><div>올바른 판단</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 프리프로덕션에서 세부 연출까지 확정함</div><div class="mistake-good">✓ 타이밍·동선·컷 순서·대략적 앵글만 확정. 세부 레이아웃은 프로덕션에서.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 가편집을 너무 완성도 있게 만듦</div><div class="mistake-good">✓ 러프할수록 좋다. 완성도가 높으면 그게 기준이 되어 탐색 범위가 줄어든다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 포토리얼 스토리보드를 Seedance에 그대로 투입</div><div class="mistake-good">✓ 반드시 스케치로 변환한다. 포토리얼 스토리보드의 화질이 영상 퀄리티를 끌어내린다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 퀄리티 앵커에 포즈 강한 이미지 사용 → T2V 동작 고정</div><div class="mistake-good">✓ 포즈 강한 퀄리티 앵커는 T2V 레퍼런스 대신 I2V START FRAME으로 사용한다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 스토리보드 프레임을 서로 다른 배치에서 섞어 조합 (F방식)</div><div class="mistake-good">✓ 각 배치의 빛·색·캐릭터 렌더링이 달라 Seedance 앵커가 불안정해진다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 레퍼런스를 너무 많이 넣음</div><div class="mistake-good">✓ 최대 6개. 많을수록 모델이 우선순위를 못 잡아 품질이 낮아진다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 핵심 컷도 T2V로 처리함</div><div class="mistake-good">✓ 얼굴 클로즈업·대사 컷은 반드시 I2V로 별도 생성한다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 1차 시도부터 모션 컨트롤 사용</div><div class="mistake-good">✓ START FRAME + 텍스트 프롬프팅 먼저. 죽어도 안 나올 때만 모션 컨트롤 추가.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 아쉬운 구간 때문에 전체를 다시 돌림</div><div class="mistake-good">✓ Video Edit으로 해당 구간만 수정. 전체 재생성은 다른 샷 퀄리티를 바꿀 수 있다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 텍스트 프롬프트에서 외모를 반복 설명함</div><div class="mistake-good">✓ 이미지를 보고 있는 모델에게 외모 재설명은 토큰 낭비이자 충돌 원인. 모션만 기술한다.</div></div>
+    <div class="mistake-row"><div class="mistake-bad">✗ 연속된 샷 간 시각적 중복</div><div class="mistake-good">✓ 이전 샷 끝 장면을 다음 샷 시작으로 반복 금지. 각 샷은 직전 샷이 끝난 시점부터.</div></div>
+  </div>
+</div>
+
+<!-- ============================
+     CH09
+     ============================ -->
+<div class="chapter" id="ch09">
+  <div class="chapter-header"><div class="chapter-num">09</div><div class="chapter-title">테스트 로그</div></div>
+  <div class="chapter-divider"></div>
+  <p>각 테스트 세션은 별도 페이지에 기록된다. 사용한 프롬프트, 영상(루핑 재생), 발견한 인사이트를 순서대로 확인할 수 있다.</p>
+  <div class="info-box blue">
+    <div class="info-box-title">테스트 페이지 추가 방법</div>
+    <ul>
+      <li>Claude에게 새 테스트 로그 페이지 생성을 요청한다.</li>
+      <li>사용한 프롬프트 전문, Google Drive 영상 파일 ID, 인사이트를 함께 전달한다.</li>
+      <li>받은 파일을 GitHub의 tests/ 폴더에 업로드하고, 이 목록과 사이드바에 링크 추가를 요청한다.</li>
+    </ul>
+  </div>
+
+  <!-- TEST LOG LIST — 새 테스트 추가 시 여기에 a.test-card 추가 -->
+  <div style="margin-top:16px; padding:20px; background:white; border:1px solid var(--mgray); text-align:center; color:var(--gray); font-size:13px;">
+    아직 기록된 테스트가 없습니다.<br>첫 번째 테스트를 진행하고 Claude에게 페이지 생성을 요청하세요.
+  </div>
+</div>
+
+<!-- ============================
+     CH10
+     ============================ -->
+<div class="chapter" id="ch10">
+  <div class="chapter-header"><div class="chapter-num">10</div><div class="chapter-title">참고 자료 링크</div></div>
+  <div class="chapter-divider"></div>
+  <p>프롬프팅 및 워크플로우 관련 외부 자료를 모아둔다. 새로운 자료가 생기면 Claude에게 추가를 요청한다.</p>
+
+  <div class="section-label">Seedance 2.0</div>
+  <a class="resource-card" href="https://soylab.ai/seedance20" target="_blank">
+    <div class="resource-icon">📖</div>
+    <div class="resource-body">
+      <div class="resource-title">Seedance 2.0 프롬프트 가이드 (한국어)</div>
+      <div class="resource-url">soylab.ai/seedance20</div>
+      <div class="resource-desc">공식 프롬프트 가이드 한국어 번역. 텍스트 지시문 공식, 멀티모달 참조 제어, 이미지/비디오/오디오 참조, 비디오 편집 기능 전반.</div>
+    </div>
+    <div class="resource-arrow">↗</div>
+  </a>
+
+  <a class="resource-card" href="https://oasis-dentist-28a.notion.site/Seedance-2-0-33e7425e6122806487dfe069d1aa8eca" target="_blank">
+    <div class="resource-icon">📝</div>
+    <div class="resource-body">
+      <div class="resource-title">Seedance 2.0 프롬프팅 보고서</div>
+      <div class="resource-url">oasis-dentist-28a.notion.site</div>
+      <div class="resource-desc">Seedance 2.0 프롬프팅 실험 및 분석 보고서. (Notion — 로그인 필요할 수 있음)</div>
+    </div>
+    <div class="resource-arrow">↗</div>
+  </a>
+
+  <div class="section-label">추가 예정</div>
+  <div class="prompt-tbd">추가 예정 — GPT Image 2.0 프롬프팅 가이드 링크</div>
+  <div class="prompt-tbd">추가 예정 — Suno / 사운드 관련 참고 자료</div>
+</div>
+
+<div class="footer">생성형 AI 영상 제작 프로세스 v2.0 &nbsp;·&nbsp; 개인 참고용 &nbsp;·&nbsp; 2026</div>
+</div><!-- /container -->
+</div><!-- /page-wrap -->
+
+<script>
+  // 부드러운 스크롤
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const el = document.querySelector(a.getAttribute('href'));
+      if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  });
+
+  // 사이드바 활성 챕터 하이라이트
+  const chapters = document.querySelectorAll('.chapter[id]');
+  const sidebarLinks = document.querySelectorAll('.sidebar-link[data-ch]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        const id = entry.target.id;
+        sidebarLinks.forEach(l => {
+          l.classList.toggle('active', l.dataset.ch === id);
+        });
+      }
+    });
+  }, { rootMargin:'-10% 0px -80% 0px' });
+
+  chapters.forEach(ch => observer.observe(ch));
 </script>
 </body>
 </html>
