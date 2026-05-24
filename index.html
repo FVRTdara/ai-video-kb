@@ -883,6 +883,61 @@ No camera reset between shots. No distortion.</pre>
 </div><!-- /container -->
 </div><!-- /page-wrap -->
 
+<style>
+  #pw-overlay {
+    position:fixed; inset:0; background:var(--black); z-index:9999;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #pw-box {
+    text-align:center;
+  }
+  #pw-box .pw-logo { font-size:11px; letter-spacing:3px; color:var(--accent); font-weight:700; margin-bottom:28px; }
+  #pw-box input {
+    background:#111; border:1px solid #333; color:white;
+    padding:10px 18px; font-size:16px; letter-spacing:4px;
+    text-align:center; outline:none; width:180px;
+    font-family:monospace;
+  }
+  #pw-box input:focus { border-color:var(--accent); }
+  #pw-box .pw-hint { font-size:11px; color:#444; margin-top:10px; }
+  #pw-box .pw-error { font-size:11px; color:#AA4444; margin-top:8px; min-height:16px; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)}
+  }
+  .shake { animation:shake .3s ease; }
+</style>
+
+<div id="pw-overlay">
+  <div id="pw-box">
+    <div class="pw-logo">AI VIDEO KB</div>
+    <input type="password" id="pw-input" placeholder="••••" maxlength="10" autofocus />
+    <div class="pw-hint">비밀번호를 입력하세요</div>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    var input = document.getElementById('pw-input');
+    var overlay = document.getElementById('pw-overlay');
+    var error = document.getElementById('pw-error');
+    var PW = '0524';
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (input.value === PW) {
+          overlay.style.display = 'none';
+        } else {
+          error.textContent = '비밀번호가 틀렸습니다.';
+          input.classList.remove('shake');
+          void input.offsetWidth;
+          input.classList.add('shake');
+          input.value = '';
+        }
+      }
+    });
+  })();
+</script>
+
 <script>
   // 부드러운 스크롤
   document.querySelectorAll('a[href^="#"]').forEach(a => {
